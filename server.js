@@ -110,6 +110,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       // paymentId will be updated after payment is captured
     });
 
+    
     await order.save();
 
     // Calculate and add supercoins
