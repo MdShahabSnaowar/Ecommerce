@@ -19,11 +19,15 @@ const orderSchema = new Schema({
   ],
   status: {
     type: String,
-    enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
-    default: "pending",
+    enum: ["shipped", "outfor delivery", "delivered", "cancelled"], 
+    default: "shipped",
   },
   totalAmount: {
     type: Number,
+    required: true,
+  },
+  deliveryAddress: {
+    type: Object,
     required: true,
   },
   paymentId: {

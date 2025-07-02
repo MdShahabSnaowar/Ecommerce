@@ -17,7 +17,7 @@ const addressSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-}, { _id: false });
+});
 
 const userSchema = new mongoose.Schema({
   mobile: { type: String, unique: true, required: true },

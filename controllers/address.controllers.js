@@ -60,10 +60,9 @@ exports.addAddress = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 exports.updateAddress = async (req, res) => {
   try {
-    const { index } = req.params;
+    const addressId = req.params.id;
     const {
       name,
       phone,
@@ -76,55 +75,62 @@ exports.updateAddress = async (req, res) => {
     } = req.body;
 
     const user = await User.findById(req.user.id);
-    if (!user || !user.addresses[index]) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Address not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const address = user.addresses.id(addressId);
+    if (!address) {
+      return res.status(404).json({ success: false, message: "Address not found" });
     }
 
     if (isDefault) {
-      // Reset all other addresses' default flag
+      // Unset default from all others
       user.addresses.forEach((addr) => (addr.isDefault = false));
     }
 
-    user.addresses[index] = {
-      name,
-      phone,
-      pincode,
-      street,
-      city,
-      state,
-      addressType,
-      isDefault,
-    };
+    // Update fields
+    address.name = name ?? address.name;
+    address.phone = phone ?? address.phone;
+    address.pincode = pincode ?? address.pincode;
+    address.street = street ?? address.street;
+    address.city = city ?? address.city;
+    address.state = state ?? address.state;
+    address.addressType = addressType ?? address.addressType;
+    address.isDefault = isDefault ?? address.isDefault;
 
     await user.save();
 
     res.json({
       success: true,
-      message: "Address updated",
-      data: user.addresses,
+      message: "Address updated successfully",
+      data: address,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Update Address Error:", err);
+    res.status(500).json({ success: false, message: "Failed to update address" });
   }
 };
-
 exports.deleteAddress = async (req, res) => {
   try {
-    const { index } = req.params;
+    const addressId = req.params.id;
 
     const user = await User.findById(req.user.id);
-    if (!user || !user.addresses[index]) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Address not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const wasDefault = user.addresses[index].isDefault;
-    user.addresses.splice(index, 1);
+    const address = user.addresses.id(addressId);
+    if (!address) {
+      return res.status(404).json({ success: false, message: "Address not found" });
+    }
 
-    // If deleted one was default, set first address as default (if exists)
+    const wasDefault = address.isDefault;
+
+    // Remove the address using Mongoose subdocument .remove()
+    address.remove();
+
+    // If the deleted one was default, set first one as default
     if (wasDefault && user.addresses.length > 0) {
       user.addresses[0].isDefault = true;
     }
@@ -133,10 +139,35 @@ exports.deleteAddress = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Address deleted",
+      message: "Address deleted successfully",
       data: user.addresses,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Delete Address Error:", err);
+    res.status(500).json({ success: false, message: "Failed to delete address" });
+  }
+};
+
+
+
+
+exports.getAddressById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const addressId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const address = user.addresses.id(addressId);
+
+    if (!address) {
+      return res.status(404).json({ error: "Address not found or unauthorized" });
+    }
+
+    res.status(200).json({ address });
+  } catch (err) {
+    console.error("Fetch Address by ID Error:", err);
+    res.status(500).json({ error: "Failed to fetch address" });
   }
 };

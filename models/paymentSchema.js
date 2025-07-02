@@ -16,8 +16,9 @@ const paymentSchema = new Schema(
     },
     signature: {
       type: String,
-      required: true,
+      default: null, // ✅ optional for now
     },
+    
     amount: {
       type: Number,
       required: true,
