@@ -3,27 +3,32 @@ const router = express.Router();
 const { Cart, FruitsVegProduct, GroceryProduct, LabTest, Medicine, MilkProduct } = require("../models");
 const authMiddleware = require("../middleware/authMiddleware");
 
-async function findProductInAllModels(productId) {
+async function findProductByType(productId, type) {
   try {
-    const models = [
-      { model: FruitsVegProduct, itemType: "FruitsVegProduct" },
-      { model: GroceryProduct, itemType: "GroceryProduct" },
-      { model: LabTest, itemType: "LabTest" },
-      { model: Medicine, itemType: "Medicine" },
-      { model: MilkProduct, itemType: "MilkProduct" },
-    ];
+    const models = {
+      FruitsVegProduct,
+      GroceryProduct,
+      LabTest,
+      Medicine,
+      MilkProduct,
+    };
 
-    for (const { model, itemType } of models) {
-      const product = await model.findById(productId);
-      if (product) {
-        console.log(`Found product ${productId} in ${itemType}:`, product);
-        return { product, itemType };
-      }
+    const model = models[type];
+    if (!model) {
+      console.log(`Invalid product type: ${type}`);
+      return null;
     }
-    console.log(`Product ${productId} not found in any model`);
+
+    const product = await model.findById(productId);
+    if (product) {
+      console.log(`Found product ${productId} in ${type}:`, product);
+      return { product, itemType: type };
+    }
+
+    console.log(`Product ${productId} not found in ${type}`);
     return null;
   } catch (err) {
-    console.error("Error finding product:", err);
+    console.error("Error finding product by type:", err);
     return null;
   }
 }
@@ -52,34 +57,27 @@ router.post("/add", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
     const items = Array.isArray(req.body) ? req.body : [req.body];
-    console.log("Received items:", items);
 
-    // Find or create the user's cart
     let cart = await Cart.findOne({ userId });
     if (!cart) {
-      cart = new Cart({
-        userId,
-        items: [],
-        totalPrice: 0,
-      });
+      cart = new Cart({ userId, items: [], totalPrice: 0 });
       console.log("Created new cart for user:", userId);
     }
 
-    for (const { productId, quantity } of items) {
-      if (!productId || !quantity || quantity < 1) {
-        console.log(`Skipping invalid item: productId=${productId}, quantity=${quantity}`);
-        continue; // Skip invalid items
+    for (const { productId, quantity, type } of items) {
+      if (!productId || !quantity || quantity < 1 || !type) {
+        console.log(`Skipping invalid item: productId=${productId}, quantity=${quantity}, type=${type}`);
+        continue;
       }
 
-      const result = await findProductInAllModels(productId);
+      const result = await findProductByType(productId, type);
       if (!result) {
         console.log(`Product not found: ${productId}`);
-        continue; // Skip if product not found
+        continue;
       }
 
       const { product, itemType } = result;
       const priceAtAdd = product.price * quantity;
-      console.log(`Adding item: productId=${productId}, itemType=${itemType}, quantity=${quantity}, priceAtAdd=${priceAtAdd}`);
 
       const existingIndex = cart.items.findIndex(
         (item) =>
@@ -88,27 +86,16 @@ router.post("/add", authMiddleware, async (req, res) => {
       );
 
       if (existingIndex > -1) {
-        // Update existing item
         cart.items[existingIndex].quantity += quantity;
         cart.items[existingIndex].priceAtAdd += priceAtAdd;
-        console.log(`Updated existing item: productId=${productId}, new quantity=${cart.items[existingIndex].quantity}`);
       } else {
-        // Add new item
-        cart.items.push({
-          productId,
-          quantity,
-          priceAtAdd,
-          itemType,
-        });
-        console.log(`Added new item: productId=${productId}, quantity=${quantity}`);
+        cart.items.push({ productId, quantity, priceAtAdd, itemType });
       }
     }
 
-    // Calculate totalPrice for the cart
     cart.totalPrice = cart.items.reduce((total, item) => total + item.priceAtAdd, 0);
     cart.updatedAt = Date.now();
 
-    console.log("Saving cart:", cart);
     await cart.save();
 
     res.status(200).json({
@@ -120,6 +107,7 @@ router.post("/add", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error adding items", error: err.message });
   }
 });
+
 
 // 🛒 Get user cart
 router.get("/", authMiddleware, async (req, res) => {
