@@ -10,4 +10,6 @@ router.get("/category/:id", catCtrl.getCategoryById);
 router.put("/category/:id", authAdmin, catCtrl.updateCategory);
 router.delete("/category/:id", authAdmin, catCtrl.deleteCategory);
 
+router.get("/with-subcategories",catCtrl.getCategoriesWithSubcategories);
+
 module.exports = router;
