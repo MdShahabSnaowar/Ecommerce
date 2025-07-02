@@ -67,7 +67,7 @@ exports.deleteCategory = async (req, res) => {
 
 exports.getCategoriesWithSubcategories = async (req, res) => {
   try {
-    const categories = await Category.find().lean();
+    const categories = await FruitsVegCategory.find().lean();
 
     const result = await Promise.all(
       categories.map(async (category) => {
