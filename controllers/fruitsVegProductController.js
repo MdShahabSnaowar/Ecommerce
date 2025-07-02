@@ -43,9 +43,50 @@ exports.createProduct = async (req, res) => {
 };
 
 
+// exports.getAllProducts = async (req, res) => {
+//   try {
+//     const products = await FruitsVegProduct.find().populate("subcategoryId");
+//     res.status(200).json({
+//       message: "Products fetched successfully",
+//       data: products,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       message: "Error fetching products",
+//       error: err.message,
+//     });
+//   }
+// };
+
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await FruitsVegProduct.find().populate("subcategoryId");
+    const { name, subcategoryId, isOrganic, availability, origin } = req.query;
+
+    // Build filter object dynamically
+    const filter = {};
+
+    if (name) {
+      filter.name = { $regex: name, $options: "i" }; // case-insensitive partial match
+    }
+
+    if (subcategoryId) {
+      filter.subcategoryId = subcategoryId;
+    }
+
+    if (isOrganic !== undefined) {
+      filter.isOrganic = isOrganic === "true";
+    }
+
+    if (availability !== undefined) {
+      filter.availability = availability === "true";
+    }
+
+    if (origin) {
+      filter.origin = origin;
+    }
+
+    const products = await FruitsVegProduct.find(filter).populate("subcategoryId");
+
     res.status(200).json({
       message: "Products fetched successfully",
       data: products,
@@ -57,6 +98,7 @@ exports.getAllProducts = async (req, res) => {
     });
   }
 };
+
 
 exports.getProductById = async (req, res) => {
   try {
