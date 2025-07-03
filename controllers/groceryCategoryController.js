@@ -2,23 +2,35 @@ const GroceryCategory = require("../models/GroceryCategory");
 const GrocerySubCategory = require("../models/GrocerySubCategory");
 
 
-
 exports.createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const category = await GroceryCategory.create({ name });
-    res.status(201).json({ message: "Category created", data: category });
-  } catch (err) {
-    if (err.code === 11000) {
+
+    // Check if category with same name already exists
+    const existingCategory = await GroceryCategory.findOne({ name });
+
+    if (existingCategory) {
       return res.status(409).json({
         message: "Category already exists",
         field: "name",
-        value: err.keyValue.name,
+        value: name,
       });
     }
-    res.status(500).json({ message: "Error creating category", error: err.message });
+
+    const newCategory = await GroceryCategory.create({ name });
+
+    res.status(201).json({
+      message: "Category created successfully",
+      data: newCategory,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error creating category",
+      error: err.message,
+    });
   }
 };
+
 
 exports.getAllCategories = async (req, res) => {
   try {
