@@ -110,13 +110,35 @@ router.post("/add", authMiddleware, async (req, res) => {
 
 
 // 🛒 Get user cart
+
+
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ userId: req.user.id }).populate("items.productId");
+    const cart = await Cart.findOne({ userId: req.user.id });
     if (!cart) {
       return res.status(404).json({ message: "No cart found for user" });
     }
-    res.status(200).json({ message: "Cart fetched", data: cart });
+
+    const populatedItems = await Promise.all(
+      cart.items.map(async (item) => {
+        const result = await findProductByType(item.productId, item.itemType);
+        const product = result?.product;
+
+        return {
+          ...item.toObject(),
+          name: product?.name || null,
+          image: product?.image || null,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Cart fetched",
+      data: {
+        ...cart.toObject(),
+        items: populatedItems,
+      },
+    });
   } catch (err) {
     console.error("Error fetching cart:", err);
     res.status(500).json({ message: "Error fetching cart", error: err.message });
