@@ -52,6 +52,7 @@ exports.addCoins = async (userId, coins, type, description = "") => {
     createdAt: new Date(),
     expiresAt,
   };
+  
 
   if (!superCoinDoc) {
     superCoinDoc = await SuperCoinSchema.create({
