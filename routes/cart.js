@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Cart, FruitsVegProduct, GroceryProduct, LabTest, Medicine, MilkProduct } = require("../models");
+const authUserOrAdmin = require("../middleware/authUserOrAdmin");
 const authMiddleware = require("../middleware/authMiddleware");
 
 async function findProductByType(productId, type) {
@@ -53,7 +54,7 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 // 🛒 Add item(s) to cart
-router.post("/add", authMiddleware, async (req, res) => {
+router.post("/add", authUserOrAdmin, async (req, res)=> {
   try {
     const userId = req.user.id;
     const items = Array.isArray(req.body) ? req.body : [req.body];
