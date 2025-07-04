@@ -9,9 +9,13 @@ exports.createMedicine = async (req, res) => {
 
     res.status(201).json({ success: true, data: medicine });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message.includes("mrp") ? "Invalid MRP value" : err.message,
+    });
   }
 };
+
 
 // Read all
 exports.getAllMedicines = async (req, res) => {

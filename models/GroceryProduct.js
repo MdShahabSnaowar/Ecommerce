@@ -14,6 +14,11 @@ const groceryProductSchema = new mongoose.Schema(
       required: [true, "Price is required"],
       min: [0, "Price must be non-negative"],
     },
+    mrp: {
+      type: Number,
+      required: false,
+      min: [0, "MRP must be non-negative"],
+    },
     brand: {
       type: String,
       trim: true,

@@ -22,6 +22,10 @@ const fruitsVegProductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    mrp: {
+      type: Number,
+      required: false,  // <‑‑ not mandatory
+    },
     unit: {
       type: String,
       enum: ["kg", "gm", "piece", "bunch", "dozen", "pack"],

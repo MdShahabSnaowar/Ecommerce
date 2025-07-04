@@ -3,7 +3,7 @@ const GroceryProduct = require("../models/GroceryProduct");
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, brand, stock, description, unit, subcategoryId } = req.body;
+    const { name, price, brand, stock, description, unit, subcategoryId, mrp } = req.body;
     const image = req.file ? `uploads/${req.file.filename}` : null;
 
     const product = await GroceryProduct.create({
@@ -14,6 +14,7 @@ exports.createProduct = async (req, res) => {
       description,
       unit,
       subcategoryId,
+      mrp, // 👈 Add mrp here
       image,
     });
 
@@ -22,6 +23,7 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ message: "Error creating product", error: err.message });
   }
 };
+
 
 exports.getAllProducts = async (req, res) => {
   try {

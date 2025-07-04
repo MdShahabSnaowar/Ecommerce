@@ -12,6 +12,7 @@ exports.createProduct = async (req, res) => {
       description,
       origin,
       availability,
+      mrp, // 👉 add mrp from req.body
     } = req.body;
 
     // ✅ Store clean paths like: uploads/image1.jpg
@@ -27,6 +28,7 @@ exports.createProduct = async (req, res) => {
       description,
       origin,
       availability,
+      mrp, // 👉 include mrp in product creation
       images,
     });
 
@@ -41,6 +43,7 @@ exports.createProduct = async (req, res) => {
     });
   }
 };
+
 
 
 // exports.getAllProducts = async (req, res) => {

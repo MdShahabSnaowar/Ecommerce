@@ -10,6 +10,11 @@ const medicineSchema = new mongoose.Schema(
       default: "Other",
     },
     price: { type: Number, required: true },
+        mrp: {
+      type: Number,
+      required: false,
+      min: [0, "MRP must be non-negative"],
+    },
     discount: { type: Number, default: 0 },
     stock: { type: Number, default: 0 },
     description: { type: String },

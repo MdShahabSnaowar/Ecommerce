@@ -3,7 +3,7 @@ const milkProduct = require("../models/MilkProduct");
 
 exports.createMilkProduct = async (req, res) => {
   try {
-    const { name, quantity, unit, price, categoryId } = req.body;
+    const { name, quantity, unit, price, categoryId, mrp } = req.body; // 👈 include mrp
     const image = req.file ? req.file.filename : null;
 
     if (!name || !quantity || !unit || !price || !categoryId || !image) {
@@ -22,6 +22,7 @@ exports.createMilkProduct = async (req, res) => {
       unit,
       price,
       categoryId,
+      mrp, // 👈 pass mrp into product if provided
     });
 
     await product.save();
@@ -41,6 +42,7 @@ exports.createMilkProduct = async (req, res) => {
     });
   }
 };
+
 
 exports.getAllMilkProducts = async (req, res) => {
   try {
