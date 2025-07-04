@@ -132,11 +132,10 @@ app.use("/api/book-slot", require("./routes/appointment"));
 //   }
 // });
 
-
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { cartId, paymentMode, addressId } = req.body;
+    const { cartId, paymentMode, addressId, expressDelivery } = req.body;
 
     if (!cartId || !paymentMode || !addressId) {
       return res.status(400).json({ message: "cartId, paymentMode, and addressId are required" });
@@ -159,7 +158,12 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Address not found or doesn't belong to user" });
     }
 
-    const amount = cart.totalPrice;
+    // 🧮 Total amount calculation
+    let amount = cart.totalPrice;
+    if (expressDelivery === true) {
+      amount += 20; // Add ₹20 for express delivery
+    }
+
     if (amount <= 0) {
       return res.status(400).json({ message: "Cart total must be greater than zero" });
     }
@@ -176,12 +180,13 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       products: formattedProducts,
       totalAmount: amount,
       status: paymentMode === "COD" ? "shipped" : "shipped",
-      deliveryAddress: selectedAddress, // 👈 save full address snapshot
+      deliveryAddress: selectedAddress,
+      expressDelivery: expressDelivery === true, // 🟢 save express flag
     });
 
     await order.save();
 
-    // Step 2: Handle payment creation
+    // Step 2: Handle payment
     let paymentData = {
       orderId: order._id,
       userId,
@@ -191,10 +196,10 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 
     if (paymentMode === "online") {
       const options = {
-        amount: Number(amount * 100),
+        amount: Number(amount * 100), // ₹ to paise
         currency: "INR",
         receipt: `order_rcptid_${Date.now()}`,
-        notes: { userId, cartId },
+        notes: { userId, cartId, expressDelivery: expressDelivery === true },
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
@@ -207,12 +212,13 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       const payment = new Payment(paymentData);
       await payment.save();
 
-      await Cart.deleteOne({ _id: cartId }); // ✅ clear cart
+      await Cart.deleteOne({ _id: cartId });
 
       return res.json({
         razorpayOrder,
         orderId: order._id,
         paymentMode,
+        expressDelivery: expressDelivery === true,
       });
     } else if (paymentMode === "COD") {
       paymentData = {
@@ -225,12 +231,13 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       const payment = new Payment(paymentData);
       await payment.save();
 
-      await Cart.deleteOne({ _id: cartId }); // ✅ clear cart
+      await Cart.deleteOne({ _id: cartId });
 
       return res.json({
         message: "COD Order placed successfully",
         orderId: order._id,
         paymentMode,
+        expressDelivery: expressDelivery === true,
       });
     }
   } catch (err) {
