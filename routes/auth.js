@@ -160,64 +160,61 @@ router.post("/login", async (req, res) => {
   try {
     const { mobile, password } = req.body;
 
+    // 🔒 Basic validation
     if (!mobile || !password) {
-      return res
-        .status(400)
-        .json({ message: "Mobile and password are required" });
-    }
-
-    // ✅ Step 1: Hardcoded admin check
-    if (mobile === "9999999999" && password === "admin123") {
-      const adminPayload = {
-        user: {
-          id: "admin-static-id", // Just a dummy ID for token purpose
-          role: "admin",
-        },
-      };
-
-      const accessToken = jwt.sign(adminPayload, process.env.JWT_SECRET, {
-        expiresIn: "15m",
-      });
-
-      const refreshToken = jwt.sign(adminPayload, process.env.JWT_REFRESH_SECRET, {
-        expiresIn: "7d",
-      });
-
-      return res.status(200).json({
-        message: "Admin login successful",
-        data: { accessToken, refreshToken },
+      return res.status(400).json({
+        message: "Mobile and password are required",
       });
     }
 
-    // ✅ Step 2: Normal user login
+    // 🔍 Find user by mobile
     const user = await User.findOne({ mobile });
 
+    // ❌ Invalid mobile or password
     if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: "Invalid mobile or password" });
+      return res.status(401).json({
+        message: "Invalid mobile or password",
+      });
     }
 
-    const accessToken = jwt.sign(
-      { user: { id: user._id, role: user.role } },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    // ✅ Prepare JWT payload
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+      },
+    };
 
-    const refreshToken = jwt.sign(
-      { user: { id: user._id } },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
+    // 🔐 Generate tokens
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
 
-    res.status(200).json({
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // ✅ Success
+    return res.status(200).json({
       message: "Login successful",
-      data: { accessToken, refreshToken },
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user._id,
+          mobile: user.mobile,
+          role: user.role,
+        },
+      },
     });
   } catch (err) {
     console.error("Login Error:", err);
-    res.status(500).json({ message: "Server error during login" });
+    return res.status(500).json({
+      message: "Server error during login",
+      error: err.message,
+    });
   }
 });
-
 
 router.post("/refresh-token", async (req, res) => {
   try {
