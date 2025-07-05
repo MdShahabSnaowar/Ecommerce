@@ -221,6 +221,32 @@ app.post("/api/payment/verify", async (req, res) => {
   }
 });
 
+
+
+app.get("/get-profile", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select("-password").populate("referredBy", "mobile email");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User profile fetched",
+      user,
+    });
+  } catch (err) {
+    console.error("User fetch error:", err.message);
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+});
+
+
+
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
