@@ -87,7 +87,9 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("Subscription verify error:", err.message);
-    res.status(500).json({ error: "Subscription verification failed" });
+    res
+      .status(500)
+      .json({ error: "Subscription verification failed", message: err });
   }
 });
 
