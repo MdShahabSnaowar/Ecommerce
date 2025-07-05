@@ -72,10 +72,10 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Plan not found" });
     }
 
-    // ✅ Setup subscription dates
+    // ✅ Setup subscription dates using plan.durationInDays
     const startDate = new Date();
     const endDate = new Date(startDate);
-    endDate.setMonth(startDate.getMonth() + plan.duration); // Add plan duration
+    endDate.setDate(endDate.getDate() + plan.durationInDays); // ✅ FIXED LINE
 
     // ✅ Create subscription record
     const subscription = new subscriptionSchema({
