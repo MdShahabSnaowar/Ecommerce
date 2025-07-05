@@ -49,26 +49,35 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
       razorpay_signature,
       planId,
     } = req.body;
+
     const userId = req.user.id;
 
+    // ✅ Generate expected signature
     const expectedSignature = crypto
-      crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
+    // ❌ Signature mismatch
     if (expectedSignature !== razorpay_signature) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid signature" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
     }
 
+    // ✅ Fetch plan
     const plan = await planSchema.findById(planId);
-    if (!plan) return res.status(404).json({ error: "Plan not found" });
+    if (!plan) {
+      return res.status(404).json({ error: "Plan not found" });
+    }
 
+    // ✅ Setup subscription dates
     const startDate = new Date();
     const endDate = new Date(startDate);
-    endDate.setMonth(startDate.getMonth() + plan.duration); // e.g., 1 month
+    endDate.setMonth(startDate.getMonth() + plan.duration); // Add plan duration
 
+    // ✅ Create subscription record
     const subscription = new subscriptionSchema({
       userId,
       planId,
@@ -80,6 +89,7 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
 
     await subscription.save();
 
+    // ✅ Respond with success
     res.json({
       success: true,
       message: "Subscription activated",
@@ -90,5 +100,4 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Subscription verification failed" });
   }
 });
-
 module.exports = router;
