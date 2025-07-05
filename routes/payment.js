@@ -52,7 +52,7 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
     const userId = req.user.id;
 
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
