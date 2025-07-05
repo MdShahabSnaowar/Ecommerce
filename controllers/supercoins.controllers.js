@@ -52,7 +52,6 @@ exports.addCoins = async (userId, coins, type, description = "") => {
     createdAt: new Date(),
     expiresAt,
   };
-  
 
   if (!superCoinDoc) {
     superCoinDoc = await SuperCoinSchema.create({
@@ -98,8 +97,6 @@ exports.redeemCoins = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
 
 // exports.redeemAtCheckout = async (req, res) => {
 //   try {
@@ -159,9 +156,6 @@ exports.redeemCoins = async (req, res) => {
 //   }
 // };
 
-
-
-
 exports.redeemAtCheckout = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -219,6 +213,8 @@ exports.redeemAtCheckout = async (req, res) => {
     });
   } catch (err) {
     console.error("Redeem Error:", err);
-    res.status(500).json({ message: "Something went wrong", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Something went wrong", error: err.message });
   }
 };

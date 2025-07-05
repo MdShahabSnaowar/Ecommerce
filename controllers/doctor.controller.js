@@ -72,7 +72,7 @@ exports.updateDoctor = async (req, res) => {
     };
 
     if (req.file) {
-      updatedData.image = `/uploads/doctors/${req.file.filename}`;
+      updatedData.image = `${req.file.filename}`;
     }
 
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, updatedData, {

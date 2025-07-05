@@ -16,7 +16,6 @@ exports.createMedicine = async (req, res) => {
   }
 };
 
-
 // Read all
 exports.getAllMedicines = async (req, res) => {
   try {
@@ -43,9 +42,7 @@ exports.getMedicineById = async (req, res) => {
 // Update
 exports.updateMedicine = async (req, res) => {
   try {
-    const image = req.file
-      ? `/uploads/medicines/${req.file.filename}`
-      : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const updateData = { ...req.body };
     if (image) updateData.image = image;
