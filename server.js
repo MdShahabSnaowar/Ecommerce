@@ -11,6 +11,7 @@ const OrderSchema = require("./models/OrderSchema");
 const User = require("./models/User");
 const authMiddleware = require("./middleware/authMiddleware");
 const Cart = require("./models/Cart");
+const supercoin = require("./models/SuperCoinSchema");
 const crypto = require("crypto");
 
 dotenv.config();
@@ -206,6 +207,42 @@ app.post("/api/payment/verify", async (req, res) => {
       payment.status = "completed";
       payment.signature = razorpay_signature;
       await payment.save();
+
+      // 🪙 SuperCoin reward logic starts here
+      const cart = await Cart.findById(cartId).populate("items.productId");
+      if (cart) {
+        const totalAmount = cart.items.reduce((acc, item) => {
+          const price =
+            item.priceAtAdd || (item.productId && item.productId.price) || 0;
+          return acc + price * item.quantity;
+        }, 0);
+
+        const coinsToAdd = Math.floor(totalAmount / 150);
+
+        if (coinsToAdd > 0) {
+          const userId = cart.userId;
+          const expiresAt = new Date();
+          expiresAt.setMonth(expiresAt.getMonth() + 6); // Coins valid for 6 months
+
+          let superCoin = await supercoin.findOne({ userId });
+
+          if (!superCoin) {
+            superCoin = new supercoin({ userId, coins: 0, history: [] });
+          }
+
+          superCoin.coins += coinsToAdd;
+          superCoin.history.push({
+            type: "purchase",
+            coins: coinsToAdd,
+            description: `Earned ${coinsToAdd} coin(s) on purchase of ₹${totalAmount}`,
+            expiresAt,
+          });
+
+          await superCoin.save();
+        }
+      }
+      // 🪙 SuperCoin reward logic ends here
+
       await Cart.deleteOne({ _id: cartId });
 
       return res.json({ status: "Payment verified and marked completed" });
@@ -222,6 +259,30 @@ app.post("/api/payment/verify", async (req, res) => {
     res.status(500).json({ status: "Internal server error" });
   }
 });
+
+app.get("/get-profile", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select("-password").populate("referredBy", "mobile email");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User profile fetched",
+      user,
+    });
+  } catch (err) {
+    console.error("User fetch error:", err.message);
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+});
+
+
+
 
 const PORT = process.env.PORT || 5000;
 

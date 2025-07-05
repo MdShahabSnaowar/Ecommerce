@@ -29,11 +29,11 @@ const fruitsVegProductSchema = new mongoose.Schema(
     unit: {
       type: String,
       enum: ["kg", "gm", "piece", "bunch", "dozen", "pack"],
-      required: true,
+      required: false,
     },
     quantity: {
       type: Number,
-      required: true,
+      required: false,
       default: 1,
     },
     isOrganic: {
