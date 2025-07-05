@@ -102,4 +102,27 @@ router.post("/subscribe/verify", authMiddleware, async (req, res) => {
       .json({ error: "Subscription verification failed", message: err });
   }
 });
+
+router.get("/get-subscribe", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const subscriptions = await subscriptionSchema
+      .find({ userId })
+      .populate("planId") // populate plan details if you want
+      .sort({ startDate: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Subscriptions fetched successfully",
+      subscriptions,
+    });
+  } catch (err) {
+    console.error("Fetch subscriptions error:", err.message);
+    res.status(500).json({ error: "Failed to fetch subscriptions" });
+  }
+});
+
+
+
 module.exports = router;
