@@ -11,13 +11,14 @@ const authAdmin = require("../middleware/authAdmin");
 // 🥦 Category
 router.post("/categories",authAdmin, category.createCategory);
 router.get("/categories", category.getAllCategories);
-router.get("/categories/:id", category.getCategoryById);
-router.put("/categories/:id",authAdmin, category.updateCategory);
-router.delete("/categories/:id", authAdmin,category.deleteCategory);
 router.get(
   "/categories/with-subcategories",
   authAdmin,category.getCategoriesWithSubcategories
 );
+
+router.get("/categories/:id", category.getCategoryById);
+router.put("/categories/:id",authAdmin, category.updateCategory);
+router.delete("/categories/:id", authAdmin,category.deleteCategory);
 
 // 🥕 Subcategory
 router.post("/subcategories", authAdmin,upload.single("image"), subcategory.createSubcategory);
