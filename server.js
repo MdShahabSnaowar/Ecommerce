@@ -221,8 +221,6 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       const payment = new Payment(paymentData);
       await payment.save();
 
-      await Cart.deleteOne({ _id: cartId });
-
       return res.json({
         razorpayOrder,
         orderId: order._id,
@@ -258,13 +256,17 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 // Verify payment signature (unchanged)
 app.post("/api/payment/verify", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      cartId,
+    } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
     const isValid = expectedSignature === razorpay_signature;
@@ -280,6 +282,7 @@ app.post("/api/payment/verify", async (req, res) => {
       payment.status = "completed";
       payment.signature = razorpay_signature;
       await payment.save();
+      await Cart.deleteOne({ _id: cartId });
 
       return res.json({ status: "Payment verified and marked completed" });
     } else {
