@@ -10,7 +10,7 @@ const Payment = require("./models/paymentSchema");
 const OrderSchema = require("./models/OrderSchema");
 const User = require("./models/User");
 const authMiddleware = require("./middleware/authMiddleware");
-const Cart  = require("./models/Cart");
+const Cart = require("./models/Cart");
 dotenv.config();
 connectDB();
 
@@ -54,6 +54,82 @@ app.use("/api/milk-products", require("./routes/milkProduct.routes"));
 app.use("/api/book-slot", require("./routes/appointment"));
 // app.use( departmentRoutes);
 
+// app.post("/api/payment/order", authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.user.id; // From auth middleware
+//     const { cartId } = req.body;
+
+//     // Validate cartId
+//     if (!cartId) {
+//       return res.status(400).json({ error: "cartId is required" });
+//     }
+
+//     // Fetch the cart and verify it belongs to the user
+//     const cart = await Cart.findOne({ _id: cartId, userId });
+//     if (!cart) {
+//       return res.status(404).json({ error: "Cart not found or does not belong to user" });
+//     }
+
+//     if (!cart.items.length) {
+//       return res.status(400).json({ error: "Cart is empty" });
+//     }
+
+//     // Use cart's totalPrice as amount
+//     const amount = cart.totalPrice;
+//     if (amount <= 0) {
+//       return res.status(400).json({ error: "Cart total price must be greater than zero" });
+//     }
+
+//     // Create Razorpay order
+//     const options = {
+//       amount: Number(amount * 100), // Convert to paise
+//       currency: "INR",
+//       receipt: `order_rcptid_${Date.now()}`,
+//       notes: {
+//         userId,
+//         cartId,
+//       },
+//     };
+
+//     const razorpayOrder = await razorpay.orders.create(options);
+//     console.log("Cart items:", cart.items);
+
+//     // Format cart items to match OrderSchema
+//     const formattedProducts = cart.items.map((item) => ({
+//       productId: item.productId,
+//       quantity: item.quantity,
+//       priceAtPurchase: item.priceAtAdd, // Rename to match OrderSchema
+//     }));
+
+//     console.log("Formatted products:", formattedProducts);
+
+//     // Save to DB
+//     const order = new OrderSchema({
+//       userId,
+//       products: formattedProducts,
+//       totalAmount: amount,
+//       // status is "pending" by default
+//       // paymentId will be updated after payment is captured
+//     });
+
+//     await order.save();
+
+//     // Calculate and add supercoins
+//     const earnedCoins = Math.floor(amount / 150);
+//     if (earnedCoins > 0) {
+//       const { addCoins } = require("./controllers/supercoins.controllers");
+//       await addCoins(userId, earnedCoins, "purchase", `Earned from order ₹${amount}`);
+//     }
+
+//     res.json({
+//       razorpayOrder,
+//       orderId: order._id,
+//     });
+//   } catch (err) {
+//     console.error("Order creation error:", err);
+//     res.status(500).json({ error: "Failed to create order" });
+//   }
+// });
 
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
   try {
@@ -61,16 +137,22 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
     const { cartId, paymentMode, addressId, expressDelivery } = req.body;
 
     if (!cartId || !paymentMode || !addressId) {
-      return res.status(400).json({ message: "cartId, paymentMode, and addressId are required" });
+      return res
+        .status(400)
+        .json({ message: "cartId, paymentMode, and addressId are required" });
     }
 
     if (!["online", "COD"].includes(paymentMode)) {
-      return res.status(400).json({ message: "Invalid payment mode. Choose 'online' or 'COD'" });
+      return res
+        .status(400)
+        .json({ message: "Invalid payment mode. Choose 'online' or 'COD'" });
     }
 
     const cart = await Cart.findOne({ _id: cartId, userId });
     if (!cart || !cart.items.length) {
-      return res.status(400).json({ message: "Cart not found, not yours, or empty" });
+      return res
+        .status(400)
+        .json({ message: "Cart not found, not yours, or empty" });
     }
 
     const user = await User.findById(userId);
@@ -78,7 +160,9 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 
     const selectedAddress = user.addresses.id(addressId);
     if (!selectedAddress) {
-      return res.status(404).json({ message: "Address not found or doesn't belong to user" });
+      return res
+        .status(404)
+        .json({ message: "Address not found or doesn't belong to user" });
     }
 
     // 🧮 Total amount calculation
@@ -88,7 +172,9 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
     }
 
     if (amount <= 0) {
-      return res.status(400).json({ message: "Cart total must be greater than zero" });
+      return res
+        .status(400)
+        .json({ message: "Cart total must be greater than zero" });
     }
 
     const formattedProducts = cart.items.map((item) => ({
@@ -169,13 +255,11 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
   }
 });
 
-
-
-
 // Verify payment signature (unchanged)
 app.post("/api/payment/verify", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
@@ -202,19 +286,15 @@ app.post("/api/payment/verify", async (req, res) => {
       payment.status = "failed";
       await payment.save();
 
-      return res.status(400).json({ status: "Invalid signature. Payment marked failed" });
+      return res
+        .status(400)
+        .json({ status: "Invalid signature. Payment marked failed" });
     }
   } catch (err) {
     console.error("Payment verification error:", err);
     res.status(500).json({ status: "Internal server error" });
   }
 });
-
-
-
-
-
-
 
 const PORT = process.env.PORT || 5000;
 
