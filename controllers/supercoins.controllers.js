@@ -98,63 +98,6 @@ exports.redeemCoins = async (req, res) => {
   }
 };
 
-// exports.redeemAtCheckout = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-//     const { coinsToRedeem } = req.body;
-
-//     const superCoins = await SuperCoinSchema.findOne({ userId });
-//     if (!superCoins || superCoins.coins < coinsToRedeem) {
-//       return res
-//         .status(400)
-//         .json({ message: "You do not have enough coins to redeem." });
-//     }
-
-//     const cart = await Cart.findOne({ userId }).populate("items.productId");
-//     if (!cart || cart.items.length === 0) {
-//       return res.status(400).json({ message: "Cart is empty." });
-//     }
-
-//     // Calculate total cart value
-//     let totalAmount = 0;
-//     for (let item of cart.items) {
-//       totalAmount += (item.priceAtAdd || 0) * item.quantity;
-//     }
-
-//     // Determine max redeemable coins
-//     const maxCoinsUsable = Math.min(Math.floor(totalAmount), superCoins.coins);
-
-//     if (coinsToRedeem > maxCoinsUsable) {
-//       return res.status(400).json({
-//         message: `You can only redeem up to ${maxCoinsUsable} coins for this cart.`,
-//       });
-//     }
-
-//     // Deduct coins
-//     superCoins.coins -= coinsToRedeem;
-//     superCoins.history.push({
-//       type: "redeem",
-//       coins: coinsToRedeem,
-//       description: `Redeemed ₹${coinsToRedeem} during checkout`,
-//       createdAt: new Date(),
-//     });
-
-//     await superCoins.save();
-
-//     const discountedTotal = totalAmount - coinsToRedeem;
-
-//     res.json({
-//       message: "Coins redeemed successfully.",
-//       data:{
-//       originalAmount: totalAmount,
-//       coinsUsed: coinsToRedeem,
-//       finalAmount: discountedTotal,}
-//     });
-//   } catch (err) {
-//     console.error("Redeem Error:", err);
-//     res.status(500).json({ message: "Something went wrong", error: err.message });
-//   }
-// };
 
 exports.redeemAtCheckout = async (req, res) => {
   try {

@@ -9,9 +9,10 @@ const Razorpay = require("razorpay");
 const Payment = require("./models/paymentSchema");
 const OrderSchema = require("./models/OrderSchema");
 const User = require("./models/User");
+const SuperCoin = require("./models/SuperCoinSchema");
 const authMiddleware = require("./middleware/authMiddleware");
 const Cart = require("./models/Cart");
-const supercoin = require("./models/SuperCoinSchema");
+
 const crypto = require("crypto");
 
 dotenv.config();
@@ -61,7 +62,14 @@ app.use("/api/book-slot", require("./routes/appointment"));
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { cartId, paymentMode, addressId, expressDelivery } = req.body;
+    const {
+      cartId,
+      paymentMode,
+      addressId,
+      expressDelivery,
+      useSuperCoins = false,
+      coinsToUse = 0,
+    } = req.body;
 
     if (!cartId || !paymentMode || !addressId) {
       return res
@@ -73,6 +81,12 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       return res
         .status(400)
         .json({ message: "Invalid payment mode. Choose 'online' or 'COD'" });
+    }
+
+    if (paymentMode === "COD" && useSuperCoins) {
+      return res.status(400).json({
+        message: "SuperCoins cannot be used with Cash on Delivery (COD)",
+      });
     }
 
     const cart = await Cart.findOne({ _id: cartId, userId });
@@ -98,6 +112,32 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       amount += 20; // Add ₹20 for express delivery
     }
 
+    let superCoinDiscount = 0;
+
+    if (useSuperCoins) {
+      const superCoinData = await SuperCoin.findOne({ userId });
+      const availableCoins = superCoinData?.coins || 0;
+
+      if (coinsToUse > availableCoins) {
+        return res.status(400).json({
+          message: `You only have ${availableCoins} SuperCoins. You cannot use ${coinsToUse}.`,
+        });
+      }
+
+      superCoinDiscount = coinsToUse;
+      amount -= superCoinDiscount;
+      if (amount < 0) amount = 0;
+
+      // Deduct coins & add to history
+      superCoinData.coins -= coinsToUse;
+      superCoinData.history.push({
+        type: "redeem",
+        coins: coinsToUse,
+        description: `Used ${coinsToUse} coins for order payment`,
+      });
+      await superCoinData.save();
+    }
+
     if (amount <= 0) {
       return res
         .status(400)
@@ -117,7 +157,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       totalAmount: amount,
       status: paymentMode === "COD" ? "shipped" : "shipped",
       deliveryAddress: selectedAddress,
-      expressDelivery: expressDelivery === true, // 🟢 save express flag
+      expressDelivery: expressDelivery === true,
     });
 
     await order.save();
@@ -135,7 +175,11 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         amount: Number(amount * 100), // ₹ to paise
         currency: "INR",
         receipt: `order_rcptid_${Date.now()}`,
-        notes: { userId, cartId, expressDelivery: expressDelivery === true },
+        notes: {
+          userId,
+          cartId,
+          expressDelivery: expressDelivery === true,
+        },
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
@@ -153,6 +197,9 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         orderId: order._id,
         paymentMode,
         expressDelivery: expressDelivery === true,
+        superCoinUsed: useSuperCoins,
+        coinsUsed: coinsToUse,
+        superCoinDiscount,
       });
     } else if (paymentMode === "COD") {
       paymentData = {
@@ -172,6 +219,9 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         orderId: order._id,
         paymentMode,
         expressDelivery: expressDelivery === true,
+        superCoinUsed: useSuperCoins,
+        coinsUsed: coinsToUse,
+        superCoinDiscount,
       });
     }
   } catch (err) {
@@ -179,6 +229,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
+
 
 // Verify payment signature (unchanged)
 app.post("/api/payment/verify", async (req, res) => {
