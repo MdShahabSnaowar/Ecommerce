@@ -60,7 +60,7 @@ router.get(
   product.getAllProductBySubcategoryId
 );
 router.get("/product/:id", product.getProductById);
-<<<<<<< HEAD
+
 router.put("/product/:id",authAdmin, upload.array("images", 5), product.updateProduct);
 router.delete("/product/:id", authAdmin,product.deleteProduct);
 
@@ -218,8 +218,6 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
 
 
 
-
-=======
 router.put(
   "/product/:id",
   authAdmin,
@@ -227,7 +225,7 @@ router.put(
   product.updateProduct
 );
 router.delete("/product/:id", authAdmin, product.deleteProduct);
->>>>>>> dea50d334dcb1946f7f6f8782e08934ea1966ca4
+
 module.exports = router;
 
 
