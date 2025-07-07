@@ -152,49 +152,55 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       return res.status(200).json({ message: "Milk data imported successfully" });
 
     } else if (type === "Grocery") {
-      // ✅ Grocery logic
-      const groceryCategoryIdMap = {};
+  // ✅ Grocery logic
+  const groceryCategoryIdMap = {};
 
-      for (const cat of jsonData.groceryCategories) {
-        const newCat = await GroceryCategory.create({
-          name: cat.name,
-        });
-        groceryCategoryIdMap[cat.id] = newCat._id;
-      }
+  for (const cat of jsonData.groceryCategories) {
+    let existingCategory = await GroceryCategory.findOne({ name: cat.name });
 
-      const grocerySubcategoryIdMap = {};
-
-      for (const sub of jsonData.grocerySubcategories) {
-        const categoryId = groceryCategoryIdMap[sub.categoryId];
-        if (!categoryId) continue;
-
-        const newSub = await GrocerySubcategory.create({
-          name: sub.name,
-          image: sub.image,
-          categoryId: categoryId,
-        });
-        grocerySubcategoryIdMap[sub.id] = newSub._id;
-      }
-
-      const productPromises = jsonData.groceryProducts.map((prod) => {
-        const subId = grocerySubcategoryIdMap[prod.subcategoryId];
-        if (!subId) return null;
-
-        return GroceryProduct.create({
-          name: prod.name,
-          price: prod.price,
-          mrp: prod.mrp,
-          brand: prod.brand,
-          stock: prod.stock,
-          image: prod.image,
-          description: prod.description,
-          unit: prod.unit,
-          subcategoryId: subId,
-        });
+    if (!existingCategory) {
+      existingCategory = await GroceryCategory.create({
+        name: cat.name,
       });
+    }
 
-      await Promise.all(productPromises.filter(Boolean));
-      return res.status(200).json({ message: "Grocery data imported successfully" });
+    groceryCategoryIdMap[cat.id] = existingCategory._id;
+  }
+
+  const grocerySubcategoryIdMap = {};
+
+  for (const sub of jsonData.grocerySubcategories) {
+    const categoryId = groceryCategoryIdMap[sub.categoryId];
+    if (!categoryId) continue;
+
+    const newSub = await GrocerySubcategory.create({
+      name: sub.name,
+      image: sub.image,
+      categoryId: categoryId,
+    });
+
+    grocerySubcategoryIdMap[sub.id] = newSub._id;
+  }
+
+  const productPromises = jsonData.groceryProducts.map((prod) => {
+    const subId = grocerySubcategoryIdMap[prod.subcategoryId];
+    if (!subId) return null;
+
+    return GroceryProduct.create({
+      name: prod.name,
+      price: prod.price,
+      mrp: prod.mrp,
+      brand: prod.brand,
+      stock: prod.stock,
+      image: prod.image,
+      description: prod.description,
+      unit: prod.unit,
+      subcategoryId: subId,
+    });
+  });
+
+  await Promise.all(productPromises.filter(Boolean));
+  return res.status(200).json({ message: "Grocery data imported successfully" });
 
     } else {
       return res.status(400).json({ error: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'" });
