@@ -149,7 +149,7 @@ router.get("/", authMiddleware, async (req, res) => {
 // 🗑️ Remove item from cart
 router.post("/remove", authMiddleware, async (req, res) => {
   try {
-    const { productId, itemType } = req.body;
+    const { productId, itemType, decreaseBy } = req.body;
     const userId = req.user.id;
 
     if (!productId || !itemType) {
@@ -161,27 +161,41 @@ router.post("/remove", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    const initialLength = cart.items.length;
-    cart.items = cart.items.filter(
-      (item) => item.productId.toString() !== productId || item.itemType !== itemType
+    const itemIndex = cart.items.findIndex(
+      (item) => item.productId.toString() === productId && item.itemType === itemType
     );
 
-    if (cart.items.length === initialLength) {
+    if (itemIndex === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     }
 
-    // Recalculate totalPrice
-    cart.totalPrice = cart.items.reduce((total, item) => total + item.priceAtAdd, 0);
+    // Handle quantity reduction
+    if (decreaseBy && decreaseBy > 0) {
+      cart.items[itemIndex].quantity -= decreaseBy;
+
+      // If quantity becomes 0 or less, remove the item
+      if (cart.items[itemIndex].quantity <= 0) {
+        cart.items.splice(itemIndex, 1);
+      }
+    } else {
+      // Full item removal (existing behavior)
+      cart.items.splice(itemIndex, 1);
+    }
+
+    // Recalculate total price
+    cart.totalPrice = cart.items.reduce(
+      (total, item) => total + item.quantity * item.priceAtAdd,
+      0
+    );
     cart.updatedAt = Date.now();
 
     if (cart.items.length === 0) {
-      // Optionally delete cart if empty
       await Cart.deleteOne({ _id: cart._id });
       return res.status(200).json({ message: "Item removed and empty cart deleted" });
     }
 
     await cart.save();
-    res.status(200).json({ message: "Item removed from cart", data: cart });
+    res.status(200).json({ message: "Cart updated successfully", data: cart });
   } catch (err) {
     console.error("Error removing item:", err);
     res.status(500).json({ message: "Error removing item", error: err.message });
