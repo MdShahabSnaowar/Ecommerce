@@ -18,6 +18,56 @@ const crypto = require("crypto");
 dotenv.config();
 connectDB();
 
+const cron = require("node-cron");
+const Subscription = require("./models/subscriptionSchema");
+
+//  Run every day at midnight (00:00)
+cron.schedule("0 0 * * *", async () => {
+  try {
+    const now = new Date();
+
+    const expiredSubscriptions = await Subscription.updateMany(
+      {
+        endDate: { $lt: now },
+        status: "active",
+      },
+      {
+        $set: { status: "expired" },
+      }
+    );
+
+    console.log(
+      `✅ Subscription Expiry Job: ${expiredSubscriptions.modifiedCount} subscriptions marked as expired.`
+    );
+  } catch (err) {
+    console.error("❌ Subscription Expiry Job Failed:", err.message);
+  }
+});
+
+//  Run every 5 sec for tsting to expire the subscriptions
+// cron.schedule("*/5 * * * * *", async () => {
+//   try {
+//     const now = new Date();
+
+//     const expiredSubscriptions = await Subscription.updateMany(
+//       {
+//         endDate: { $lt: now },
+//         status: "active",
+//       },
+//       {
+//         $set: { status: "expired" },
+//       }
+//     );
+
+//     console.log(
+//       `✅ Subscription Expiry Job: ${expiredSubscriptions.modifiedCount} subscriptions marked as expired.`
+//     );
+//   } catch (err) {
+//     console.error("❌ Subscription Expiry Job Failed:", err.message);
+//   }
+// });
+
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
