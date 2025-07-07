@@ -65,20 +65,20 @@ router.put("/product/:id",authAdmin, upload.array("images", 5), product.updatePr
 router.delete("/product/:id", authAdmin,product.deleteProduct);
 
 
-
 router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
   try {
     const { type } = req.body;
+    console.log("🔍 File:", req.file);
+    console.log("🔍 Body Type:", req.body.type);
 
     if (!req.file || !type) {
-      return res.status(400).json({ error: "File and type are required" });
+      return res.status(400).json({ success: false, message: "File and type are required" });
     }
 
     const filePath = req.file.path;
     const jsonData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
     if (type === "Fruits&Vegetables") {
-      // ✅ Fruits & Vegetables logic
       const categoryData = jsonData.FruitsVegCategory[0];
       let createdCategory = await FruitsVegCategory.findOne({ slug: categoryData.slug });
       if (!createdCategory) {
@@ -86,149 +86,261 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       }
 
       const subcategoryIdMap = {};
+      const skippedSubcategories = [];
+
       for (const subcat of jsonData.FruitsVegSubcategory) {
-        const newSubcat = await FruitsVegSubcategory.create({
-          name: subcat.name,
-          image: subcat.image,
-          categoryId: createdCategory._id,
-        });
-        subcategoryIdMap[subcat.id] = newSubcat._id;
-      }
-
-      const productPromises = jsonData.FruitsVegProduct.map((prod) => {
-        const subId = subcategoryIdMap[prod.sub_id];
-        if (!subId) return null;
-
-        return FruitsVegProduct.create({
-          name: prod.name,
-          images: prod.images,
-          subcategoryId: subId,
-          price: prod.price,
-          mrp: prod.mrp,
-          unit: prod.unit,
-          quantity: prod.quantity,
-          isOrganic: prod.isOrganic,
-          description: prod.description,
-          origin: prod.origin,
-          availability: prod.availability,
-        });
-      });
-
-      await Promise.all(productPromises.filter(Boolean));
-      return res.status(200).json({ message: "Fruits & Vegetables data imported successfully" });
-
-    } else if (type === "Milk") {
-      // ✅ Milk logic
-      const categoryIdMap = {};
-
-      for (const cat of jsonData.categories) {
-        const newCat = await MilkCategory.create({
-          name: cat.name,
-          image: cat.image,
-          rating: cat.rating,
-          address: cat.address,
-        });
-        categoryIdMap[cat.id] = newCat._id;
-      }
-
-      const productPromises = jsonData.products.map((prod) => {
-        const catId = categoryIdMap[prod.categoryId];
-        if (!catId) return null;
-
-        return MilkProduct.create({
-          name: prod.name,
-          image: prod.image,
-          quantity: prod.quantity,
-          unit: prod.unit,
-          price: prod.price,
-          mrp: prod.mrp,
-          deliveryTime: prod.deliveryTime,
-          categoryId: catId,
-        });
-      });
-
-      await Promise.all(productPromises.filter(Boolean));
-      return res.status(200).json({ message: "Milk data imported successfully" });
-
-    } else if (type === "Grocery") {
-      // ✅ Grocery logic with subcategory-safe insert + product report
-      const groceryCategoryIdMap = {};
-      const grocerySubcategoryIdMap = {};
-
-      for (const cat of jsonData.groceryCategories) {
-        let existingCategory = await GroceryCategory.findOne({ name: cat.name });
-        if (!existingCategory) {
-          existingCategory = await GroceryCategory.create({ name: cat.name });
-        }
-        groceryCategoryIdMap[cat.id] = existingCategory._id;
-      }
-
-      for (const sub of jsonData.grocerySubcategories) {
-        const categoryId = groceryCategoryIdMap[sub.categoryId];
-        if (!categoryId) continue;
-
-        let existingSub = await GrocerySubcategory.findOne({
-          name: sub.name,
-          categoryId: categoryId,
-        });
-
-        if (!existingSub) {
-          existingSub = await GrocerySubcategory.create({
-            name: sub.name,
-            image: sub.image,
-            categoryId: categoryId,
+        try {
+          let existing = await FruitsVegSubcategory.findOne({
+            name: subcat.name,
+            categoryId: createdCategory._id,
           });
-        }
 
-        grocerySubcategoryIdMap[sub.id] = existingSub._id;
+          if (existing) {
+            subcategoryIdMap[subcat.id] = existing._id;
+            skippedSubcategories.push(`"${subcat.name}"`);
+            continue;
+          }
+
+          const newSubcat = await FruitsVegSubcategory.create({
+            name: subcat.name,
+            image: subcat.image,
+            categoryId: createdCategory._id,
+          });
+          subcategoryIdMap[subcat.id] = newSubcat._id;
+        } catch (err) {
+          skippedSubcategories.push(`"${subcat.name}" (error: ${err.message})`);
+        }
       }
 
       const insertedProducts = [];
       const skippedProducts = [];
 
-    for (const prod of jsonData.groceryProducts) {
-      const subId = grocerySubcategoryIdMap[prod.subcategoryId];
-      if (!subId) {
-        skippedProducts.push(`"${prod.name}" (subcategoryId "${prod.subcategoryId}")`);
-        continue;
+      for (const prod of jsonData.FruitsVegProduct) {
+        const subId = subcategoryIdMap[prod.sub_id];
+        if (!subId) {
+          skippedProducts.push(`"${prod.name}" (subcategory not found)`);
+          continue;
+        }
+
+        try {
+          const existing = await FruitsVegProduct.findOne({
+            name: prod.name,
+            subcategoryId: subId,
+          });
+
+          if (existing) {
+            skippedProducts.push(`"${prod.name}" (duplicate)`);
+            continue;
+          }
+
+          const newProd = await FruitsVegProduct.create({
+            name: prod.name,
+            images: prod.images,
+            subcategoryId: subId,
+            price: prod.price,
+            mrp: prod.mrp,
+            unit: prod.unit,
+            quantity: prod.quantity,
+            isOrganic: prod.isOrganic,
+            description: prod.description,
+            origin: prod.origin,
+            availability: prod.availability,
+          });
+
+          insertedProducts.push(newProd.name);
+        } catch (err) {
+          skippedProducts.push(`"${prod.name}" (error: ${err.message})`);
+        }
       }
-    
-      try {
-        const newProduct = await GroceryProduct.create({
-          name: prod.name,
-          price: prod.price,
-          mrp: prod.mrp,
-          brand: prod.brand,
-          stock: prod.stock,
-          image: prod.image,
-          description: prod.description,
-          unit: prod.unit,
-          subcategoryId: subId,
-        });
-      
-        insertedProducts.push(newProduct.name);
-      } catch (error) {
-        console.error(`❌ Error adding product "${prod.name}": ${error.message}`);
-        skippedProducts.push(`"${prod.name}" (error: ${error.message})`);
-      }
-    }
-    
 
       return res.status(200).json({
-        message: "Grocery data imported successfully",
-        insertedCount: insertedProducts.length,
-        skippedCount: skippedProducts.length,
-        ...(skippedProducts.length > 0 && {
+        success: true,
+        message: "Fruits & Vegetables data imported",
+        data: {
+          insertedProductsCount: insertedProducts.length,
+          skippedProductsCount: skippedProducts.length,
           skippedProducts,
-        }),
-      });
-
-    } else {
-      return res.status(400).json({
-        error: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'",
+          skippedSubcategories,
+        },
       });
     }
 
+    // 🥛 MILK SECTION
+    else if (type === "Milk") {
+      const categoryIdMap = {};
+      const skippedCategories = [];
+      const skippedProducts = [];
+      const insertedProducts = [];
+
+      for (const cat of jsonData.categories) {
+        try {
+          let existing = await MilkCategory.findOne({ name: cat.name });
+          if (existing) {
+            categoryIdMap[cat.id] = existing._id;
+            skippedCategories.push(`"${cat.name}" (duplicate)`);
+            continue;
+          }
+
+          const newCat = await MilkCategory.create(cat);
+          categoryIdMap[cat.id] = newCat._id;
+        } catch (err) {
+          skippedCategories.push(`"${cat.name}" (error: ${err.message})`);
+        }
+      }
+
+      for (const prod of jsonData.products) {
+        const catId = categoryIdMap[prod.categoryId];
+        if (!catId) {
+          skippedProducts.push(`"${prod.name}" (category missing)`);
+          continue;
+        }
+
+        try {
+          const existing = await MilkProduct.findOne({
+            name: prod.name,
+            categoryId: catId,
+          });
+
+          if (existing) {
+            skippedProducts.push(`"${prod.name}" (duplicate)`);
+            continue;
+          }
+
+          const newProd = await MilkProduct.create({
+            ...prod,
+            categoryId: catId,
+          });
+
+          insertedProducts.push(newProd.name);
+        } catch (err) {
+          skippedProducts.push(`"${prod.name}" (error: ${err.message})`);
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Milk data imported",
+        data: {
+          insertedProductsCount: insertedProducts.length,
+          skippedProductsCount: skippedProducts.length,
+          skippedProducts,
+          skippedCategories,
+        },
+      });
+    }
+
+    // 🛒 GROCERY SECTION (Updated with duplicate checks)
+    else if (type === "Grocery") {
+      const groceryCategoryIdMap = {};
+      const grocerySubcategoryIdMap = {};
+      const skippedCategories = [];
+      const skippedSubcategories = [];
+      const insertedProducts = [];
+      const skippedProducts = [];
+
+      // Categories
+      for (const cat of jsonData.groceryCategories) {
+        try {
+          let existing = await GroceryCategory.findOne({ name: cat.name });
+          if (existing) {
+            groceryCategoryIdMap[cat.id] = existing._id;
+            skippedCategories.push(`"${cat.name}" (duplicate)`);
+            continue;
+          }
+
+          const newCategory = await GroceryCategory.create({ name: cat.name });
+          groceryCategoryIdMap[cat.id] = newCategory._id;
+        } catch (err) {
+          skippedCategories.push(`"${cat.name}" (error: ${err.message})`);
+        }
+      }
+
+      // Subcategories
+      for (const sub of jsonData.grocerySubcategories) {
+        const categoryId = groceryCategoryIdMap[sub.categoryId];
+        if (!categoryId) {
+          skippedSubcategories.push(`"${sub.name}" (categoryId missing)`);
+          continue;
+        }
+
+        try {
+          let existingSub = await GrocerySubcategory.findOne({
+            name: sub.name,
+            categoryId: categoryId,
+          });
+
+          if (existingSub) {
+            grocerySubcategoryIdMap[sub.id] = existingSub._id;
+            skippedSubcategories.push(`"${sub.name}" (duplicate)`);
+            continue;
+          }
+
+          const newSub = await GrocerySubcategory.create({
+            name: sub.name,
+            image: sub.image,
+            categoryId: categoryId,
+          });
+
+          grocerySubcategoryIdMap[sub.id] = newSub._id;
+        } catch (err) {
+          skippedSubcategories.push(`"${sub.name}" (error: ${err.message})`);
+        }
+      }
+
+      // Products
+      for (const prod of jsonData.groceryProducts) {
+        const subId = grocerySubcategoryIdMap[prod.subcategoryId];
+        if (!subId) {
+          skippedProducts.push(`"${prod.name}" (subcategoryId "${prod.subcategoryId}" not found)`);
+          continue;
+        }
+
+        try {
+          const existing = await GroceryProduct.findOne({
+            name: prod.name,
+            subcategoryId: subId,
+          });
+
+          if (existing) {
+            skippedProducts.push(`"${prod.name}" (duplicate)`);
+            continue;
+          }
+
+          const newProduct = await GroceryProduct.create({
+            name: prod.name,
+            price: prod.price,
+            mrp: prod.mrp,
+            brand: prod.brand,
+            stock: prod.stock,
+            image: prod.image,
+            description: prod.description,
+            unit: prod.unit,
+            subcategoryId: subId,
+          });
+
+          insertedProducts.push(newProduct.name);
+        } catch (error) {
+          skippedProducts.push(`"${prod.name}" (error: ${error.message})`);
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Grocery data imported successfully",
+        data: {
+          insertedCount: insertedProducts.length,
+          skippedCount: skippedProducts.length,
+          skippedProducts,
+          skippedCategories,
+          skippedSubcategories,
+        },
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'",
+    });
   } catch (err) {
     console.error(err);
 
@@ -236,15 +348,18 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
       return res.status(409).json({
-        error: `Duplicate entry: A record with ${field} "${value}" already exists in the database.`,
+        success: false,
+        message: `Duplicate entry: ${field} "${value}" already exists.`,
       });
     }
 
     return res.status(500).json({
-      error: "Something went wrong while importing data. Please try again.",
+      success: false,
+      message: "Something went wrong while importing data. Please try again.",
     });
   }
 });
+
 
 
 
