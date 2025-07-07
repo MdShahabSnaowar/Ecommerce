@@ -8,8 +8,9 @@ const {
   deleteMedicine,
 } = require("../controllers/medicine.controllers");
 const upload = require("../config/multer");
+const authAdmin = require("../middleware/authAdmin");
 
-router.post("/create", upload.single("image"), createMedicine);
+router.post("/create", authAdmin, upload.single("image"), createMedicine);
 router.get("/", getAllMedicines);
 router.get("/:id", getMedicineById);
 router.put("/:id", updateMedicine);

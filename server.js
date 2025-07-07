@@ -264,7 +264,9 @@ app.get("/get-profile", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = await User.findById(userId).select("-password").populate("referredBy", "mobile email");
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("referredBy", "mobile email");
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -280,9 +282,6 @@ app.get("/get-profile", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user profile" });
   }
 });
-
-
-
 
 const PORT = process.env.PORT || 5000;
 
