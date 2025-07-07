@@ -13,7 +13,7 @@ const authAdmin = require("../middleware/authAdmin");
 router.post("/create", authAdmin, createMedicalItem);
 router.get("/", getAllMedicalItems);
 router.get("/:id", getMedicalItemById);
-router.put("/:id", updateMedicalItem);
-router.delete("/:id", deleteMedicalItem);
+router.put("/:id", authAdmin, updateMedicalItem);
+router.delete("/:id", authAdmin, deleteMedicalItem);
 
 module.exports = router;
