@@ -19,16 +19,20 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter for images only
+// Enhanced fileFilter to allow both images and JSON
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
-  const isValid = allowedTypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
-  if (isValid) {
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  const imageTypes = [".jpeg", ".jpg", ".png", ".gif"];
+  const isImage = imageTypes.includes(ext);
+
+  const isJson =
+    file.mimetype === "application/json" || ext === ".json";
+
+  if (isImage || isJson) {
     cb(null, true);
   } else {
-    cb(new Error("Only images are allowed"), false);
+    cb(new Error("Only images or JSON files are allowed"), false);
   }
 };
 
