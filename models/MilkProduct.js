@@ -5,7 +5,10 @@ const milkProductSchema = new mongoose.Schema({
   name: { type: String, required: true },
   image: { type: String, required: true },
   quantity: { type: Number, required: true },
-  unit: { type: String, enum: ["Litre", "ml"], default: "Litre" },
+  unit: {
+    type: String, // ✅ enum removed — now accepts anything
+    default: "Litre",
+  },
   price: { type: Number, required: true },
   mrp: {
     type: Number,
