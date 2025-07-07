@@ -66,7 +66,6 @@ router.delete("/product/:id", authAdmin,product.deleteProduct);
 
 
 
-
 router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
   try {
     const { type } = req.body;
@@ -152,22 +151,17 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       return res.status(200).json({ message: "Milk data imported successfully" });
 
     } else if (type === "Grocery") {
-      // ✅ Grocery logic with better error handling
+      // ✅ Grocery logic with subcategory-safe insert + product report
       const groceryCategoryIdMap = {};
+      const grocerySubcategoryIdMap = {};
 
       for (const cat of jsonData.groceryCategories) {
         let existingCategory = await GroceryCategory.findOne({ name: cat.name });
-
         if (!existingCategory) {
-          existingCategory = await GroceryCategory.create({
-            name: cat.name,
-          });
+          existingCategory = await GroceryCategory.create({ name: cat.name });
         }
-
         groceryCategoryIdMap[cat.id] = existingCategory._id;
       }
-
-      const grocerySubcategoryIdMap = {};
 
       for (const sub of jsonData.grocerySubcategories) {
         const categoryId = groceryCategoryIdMap[sub.categoryId];
@@ -189,14 +183,18 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
         grocerySubcategoryIdMap[sub.id] = existingSub._id;
       }
 
-      const productPromises = jsonData.groceryProducts.map((prod) => {
-        const subId = grocerySubcategoryIdMap[prod.subcategoryId];
-        if (!subId) {
-          console.warn(`Skipping product "${prod.name}" - subcategoryId "${prod.subcategoryId}" not found`);
-          return null;
-        }
+      const insertedProducts = [];
+      const skippedProducts = [];
 
-        return GroceryProduct.create({
+    for (const prod of jsonData.groceryProducts) {
+      const subId = grocerySubcategoryIdMap[prod.subcategoryId];
+      if (!subId) {
+        skippedProducts.push(`"${prod.name}" (subcategoryId "${prod.subcategoryId}")`);
+        continue;
+      }
+    
+      try {
+        const newProduct = await GroceryProduct.create({
           name: prod.name,
           price: prod.price,
           mrp: prod.mrp,
@@ -207,26 +205,33 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
           unit: prod.unit,
           subcategoryId: subId,
         });
+      
+        insertedProducts.push(newProduct.name);
+      } catch (error) {
+        console.error(`❌ Error adding product "${prod.name}": ${error.message}`);
+        skippedProducts.push(`"${prod.name}" (error: ${error.message})`);
+      }
+    }
+    
+
+      return res.status(200).json({
+        message: "Grocery data imported successfully",
+        insertedCount: insertedProducts.length,
+        skippedCount: skippedProducts.length,
+        ...(skippedProducts.length > 0 && {
+          skippedProducts,
+        }),
       });
 
-      const createdProducts = await Promise.all(productPromises.filter(Boolean));
-
-      if (createdProducts.length === 0) {
-        return res.status(200).json({
-          message: "No Grocery products inserted. Possibly due to missing or duplicate subcategories.",
-        });
-      }
-
-      return res.status(200).json({ message: "Grocery data imported successfully" });
-
     } else {
-      return res.status(400).json({ error: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'" });
+      return res.status(400).json({
+        error: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'",
+      });
     }
 
   } catch (err) {
     console.error(err);
 
-    // ✅ Friendly duplicate key error handler
     if (err.code === 11000 && err.keyValue) {
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
@@ -235,9 +240,12 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       });
     }
 
-    return res.status(500).json({ error: "Something went wrong while importing data. Please try again." });
+    return res.status(500).json({
+      error: "Something went wrong while importing data. Please try again.",
+    });
   }
 });
+
 
 
 

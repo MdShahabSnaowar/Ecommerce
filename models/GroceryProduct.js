@@ -40,7 +40,7 @@ const groceryProductSchema = new mongoose.Schema(
     },
     unit: {
       type: String,
-      enum: ["kg", "g", "litre", "ml", "piece", "pack", "box", "other"],
+     
       default: "piece",
     },
     subcategoryId: {
