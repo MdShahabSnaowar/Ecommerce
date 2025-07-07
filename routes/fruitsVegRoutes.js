@@ -17,30 +17,50 @@ const authAdmin = require("../middleware/authAdmin");
 const fs = require("fs");
 const path = require("path");
 
-
 // 🥦 Category
-router.post("/categories",authAdmin, category.createCategory);
+router.post("/categories", authAdmin, category.createCategory);
 router.get("/categories", category.getAllCategories);
 router.get(
   "/categories/with-subcategories",
-  authAdmin,category.getCategoriesWithSubcategories
+  authAdmin,
+  category.getCategoriesWithSubcategories
 );
 
 router.get("/categories/:id", category.getCategoryById);
-router.put("/categories/:id",authAdmin, category.updateCategory);
-router.delete("/categories/:id", authAdmin,category.deleteCategory);
+router.put("/categories/:id", authAdmin, category.updateCategory);
+router.delete("/categories/:id", authAdmin, category.deleteCategory);
 
 // 🥕 Subcategory
-router.post("/subcategories", authAdmin,upload.single("image"), subcategory.createSubcategory);
+router.post(
+  "/subcategories",
+  authAdmin,
+  upload.single("image"),
+  subcategory.createSubcategory
+);
 router.get("/subcategories", subcategory.getAllSubcategories);
 router.get("/subcategories/:id", subcategory.getSubcategoryById);
-router.put("/subcategories/:id", authAdmin,upload.single("image"), subcategory.updateSubcategory);
-router.delete("/subcategories/:id", authAdmin,subcategory.deleteSubcategory);
+router.put(
+  "/subcategories/:id",
+  authAdmin,
+  upload.single("image"),
+  subcategory.updateSubcategory
+);
+router.delete("/subcategories/:id", authAdmin, subcategory.deleteSubcategory);
 
 // 🍎 Products
-router.post("/product", authAdmin,upload.array("images", 5), product.createProduct);
+router.post(
+  "/product",
+  authAdmin,
+  upload.array("images", 5),
+  product.createProduct
+);
 router.get("/product", product.getAllProducts);
+router.get(
+  "/product/subcategory/:subcategoryId",
+  product.getAllProductBySubcategoryId
+);
 router.get("/product/:id", product.getProductById);
+<<<<<<< HEAD
 router.put("/product/:id",authAdmin, upload.array("images", 5), product.updateProduct);
 router.delete("/product/:id", authAdmin,product.deleteProduct);
 
@@ -199,6 +219,15 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
 
 
 
+=======
+router.put(
+  "/product/:id",
+  authAdmin,
+  upload.array("images", 5),
+  product.updateProduct
+);
+router.delete("/product/:id", authAdmin, product.deleteProduct);
+>>>>>>> dea50d334dcb1946f7f6f8782e08934ea1966ca4
 module.exports = router;
 
 

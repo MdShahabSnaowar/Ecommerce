@@ -16,7 +16,7 @@ exports.createProduct = async (req, res) => {
     } = req.body;
 
     // ✅ Store clean paths like: uploads/image1.jpg
-    const images = req.files?.map(file => `uploads/${file.filename}`) || [];
+    const images = req.files?.map((file) => `${file.filename}`) || [];
 
     const product = await FruitsVegProduct.create({
       name,
@@ -44,22 +44,25 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+exports.getAllProductBySubcategoryId = async (req, res) => {
+  try {
+    const { subcategoryId } = req.params;
 
+    const products = await FruitsVegProduct.find({ subcategoryId }).populate(
+      "subcategoryId"
+    );
 
-// exports.getAllProducts = async (req, res) => {
-//   try {
-//     const products = await FruitsVegProduct.find().populate("subcategoryId");
-//     res.status(200).json({
-//       message: "Products fetched successfully",
-//       data: products,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       message: "Error fetching products",
-//       error: err.message,
-//     });
-//   }
-// };
+    res.status(200).json({
+      message: "Products fetched successfully",
+      data: products,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching products by subcategory",
+      error: err.message,
+    });
+  }
+};
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -88,7 +91,9 @@ exports.getAllProducts = async (req, res) => {
       filter.origin = origin;
     }
 
-    const products = await FruitsVegProduct.find(filter).populate("subcategoryId");
+    const products = await FruitsVegProduct.find(filter).populate(
+      "subcategoryId"
+    );
 
     res.status(200).json({
       message: "Products fetched successfully",
@@ -102,10 +107,11 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-
 exports.getProductById = async (req, res) => {
   try {
-    const product = await FruitsVegProduct.findById(req.params.id).populate("subcategoryId");
+    const product = await FruitsVegProduct.findById(req.params.id).populate(
+      "subcategoryId"
+    );
 
     if (!product) {
       return res.status(404).json({
@@ -125,13 +131,12 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-
 exports.updateProduct = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
     if (req.files?.length) {
-      updateData.images = req.files.map(file => `uploads/${file.filename}`);
+      updateData.images = req.files.map((file) => `uploads/${file.filename}`);
     }
 
     const product = await FruitsVegProduct.findByIdAndUpdate(
@@ -156,12 +161,13 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-
 exports.deleteProduct = async (req, res) => {
   try {
     await FruitsVegProduct.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Product deleted" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting product", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting product", error: err.message });
   }
 };
