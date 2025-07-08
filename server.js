@@ -109,6 +109,179 @@ app.use("/api/milk", require("./routes/milkcategory"));
 app.use("/api/milk-products", require("./routes/milkProduct.routes"));
 app.use("/api/book-slot", require("./routes/appointment"));
 
+// app.post("/api/payment/order", authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const {
+//       cartId,
+//       paymentMode,
+//       addressId,
+//       expressDelivery,
+//       useSuperCoins = false,
+//       coinsToUse = 0,
+//     } = req.body;
+
+//     if (!cartId || !paymentMode || !addressId) {
+//       return res
+//         .status(400)
+//         .json({ message: "cartId, paymentMode, and addressId are required" });
+//     }
+
+//     if (!["online", "COD"].includes(paymentMode)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Invalid payment mode. Choose 'online' or 'COD'" });
+//     }
+
+//     if (paymentMode === "COD" && useSuperCoins) {
+//       return res.status(400).json({
+//         message: "SuperCoins cannot be used with Cash on Delivery (COD)",
+//       });
+//     }
+
+//     const cart = await Cart.findOne({ _id: cartId, userId });
+//     if (!cart || !cart.items.length) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart not found, not yours, or empty" });
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     const selectedAddress = user.addresses.id(addressId);
+//     if (!selectedAddress) {
+//       return res
+//         .status(404)
+//         .json({ message: "Address not found or doesn't belong to user" });
+//     }
+
+//     // 🧮 Total amount calculation
+//     let amount = cart.totalPrice;
+//     if (expressDelivery === true) {
+//       amount += 20; // Add ₹20 for express delivery
+//     }
+
+//     let superCoinDiscount = 0;
+
+//     if (useSuperCoins) {
+//       const superCoinData = await SuperCoin.findOne({ userId });
+//       const availableCoins = superCoinData?.coins || 0;
+
+//       if (coinsToUse > availableCoins) {
+//         return res.status(400).json({
+//           message: `You only have ${availableCoins} SuperCoins. You cannot use ${coinsToUse}.`,
+//         });
+//       }
+
+//       superCoinDiscount = coinsToUse;
+//       amount -= superCoinDiscount;
+//       if (amount < 0) amount = 0;
+
+//       // Deduct coins & add to history
+//       superCoinData.coins -= coinsToUse;
+//       superCoinData.history.push({
+//         type: "redeem",
+//         coins: coinsToUse,
+//         description: `Used ${coinsToUse} coins for order payment`,
+//       });
+//       await superCoinData.save();
+//     }
+
+//     if (amount <= 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart total must be greater than zero" });
+//     }
+
+//     const formattedProducts = cart.items.map((item) => ({
+//       productId: item.productId,
+//       quantity: item.quantity,
+//       priceAtPurchase: item.priceAtAdd,
+//     }));
+
+//     // Step 1: Create Order
+//     const order = new OrderSchema({
+//       userId,
+//       products: formattedProducts,
+//       totalAmount: amount,
+//       status: paymentMode === "COD" ? "shipped" : "shipped",
+//       deliveryAddress: selectedAddress,
+//       expressDelivery: expressDelivery === true,
+//     });
+
+//     await order.save();
+
+//     // Step 2: Handle payment
+//     let paymentData = {
+//       orderId: order._id,
+//       userId,
+//       amount,
+//       status: "pending",
+//     };
+
+//     if (paymentMode === "online") {
+//       const options = {
+//         amount: Number(amount * 100), // ₹ to paise
+//         currency: "INR",
+//         receipt: `order_rcptid_${Date.now()}`,
+//         notes: {
+//           userId,
+//           cartId,
+//           expressDelivery: expressDelivery === true,
+//         },
+//       };
+
+//       const razorpayOrder = await razorpay.orders.create(options);
+
+//       paymentData = {
+//         ...paymentData,
+//         transactionId: razorpayOrder.id,
+//       };
+
+//       const payment = new Payment(paymentData);
+//       await payment.save();
+
+//       return res.json({
+//         razorpayOrder,
+//         orderId: order._id,
+//         paymentMode,
+//         expressDelivery: expressDelivery === true,
+//         superCoinUsed: useSuperCoins,
+//         coinsUsed: coinsToUse,
+//         superCoinDiscount,
+//       });
+//     } else if (paymentMode === "COD") {
+//       paymentData = {
+//         ...paymentData,
+//         transactionId: `COD_${Date.now()}`,
+//         signature: "N/A",
+//         status: "shipped",
+//       };
+
+//       const payment = new Payment(paymentData);
+//       await payment.save();
+
+//       await Cart.deleteOne({ _id: cartId });
+
+//       return res.json({
+//         message: "COD Order placed successfully",
+//         orderId: order._id,
+//         paymentMode,
+//         expressDelivery: expressDelivery === true,
+//         superCoinUsed: useSuperCoins,
+//         coinsUsed: coinsToUse,
+//         superCoinDiscount,
+//       });
+//     }
+//   } catch (err) {
+//     console.error("Order creation error:", err);
+//     res.status(500).json({ error: "Failed to create order" });
+//   }
+// });
+
+
+
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -156,10 +329,9 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         .json({ message: "Address not found or doesn't belong to user" });
     }
 
-    // 🧮 Total amount calculation
     let amount = cart.totalPrice;
     if (expressDelivery === true) {
-      amount += 20; // Add ₹20 for express delivery
+      amount += 20;
     }
 
     let superCoinDiscount = 0;
@@ -177,15 +349,6 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       superCoinDiscount = coinsToUse;
       amount -= superCoinDiscount;
       if (amount < 0) amount = 0;
-
-      // Deduct coins & add to history
-      superCoinData.coins -= coinsToUse;
-      superCoinData.history.push({
-        type: "redeem",
-        coins: coinsToUse,
-        description: `Used ${coinsToUse} coins for order payment`,
-      });
-      await superCoinData.save();
     }
 
     if (amount <= 0) {
@@ -200,7 +363,6 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       priceAtPurchase: item.priceAtAdd,
     }));
 
-    // Step 1: Create Order
     const order = new OrderSchema({
       userId,
       products: formattedProducts,
@@ -212,7 +374,6 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 
     await order.save();
 
-    // Step 2: Handle payment
     let paymentData = {
       orderId: order._id,
       userId,
@@ -222,13 +383,15 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 
     if (paymentMode === "online") {
       const options = {
-        amount: Number(amount * 100), // ₹ to paise
+        amount: Number(amount * 100),
         currency: "INR",
         receipt: `order_rcptid_${Date.now()}`,
         notes: {
           userId,
           cartId,
           expressDelivery: expressDelivery === true,
+          useSuperCoins,
+          coinsToUse,
         },
       };
 
@@ -281,7 +444,89 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 });
 
 
+
 // Verify payment signature (unchanged)
+// app.post("/api/payment/verify", async (req, res) => {
+//   try {
+//     const {
+//       razorpay_order_id,
+//       razorpay_payment_id,
+//       razorpay_signature,
+//       cartId,
+//     } = req.body;
+
+//     const body = razorpay_order_id + "|" + razorpay_payment_id;
+//     const expectedSignature = crypto
+//       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//       .digest("hex");
+
+//     const isValid = expectedSignature === razorpay_signature;
+
+//     // 🧠 Get payment entry using transactionId = razorpay_order_id
+//     const payment = await Payment.findOne({ transactionId: razorpay_order_id });
+
+//     if (!payment) {
+//       return res.status(404).json({ status: "Payment not found in DB" });
+//     }
+
+//     if (isValid) {
+//       payment.status = "completed";
+//       payment.signature = razorpay_signature;
+//       await payment.save();
+
+//       // 🪙 SuperCoin reward logic starts here
+//       const cart = await Cart.findById(cartId).populate("items.productId");
+//       if (cart) {
+//         const totalAmount = cart.items.reduce((acc, item) => {
+//           const price =
+//             item.priceAtAdd || (item.productId && item.productId.price) || 0;
+//           return acc + price * item.quantity;
+//         }, 0);
+
+//         const coinsToAdd = Math.floor(totalAmount / 150);
+
+//         if (coinsToAdd > 0) {
+//           const userId = cart.userId;
+//           const expiresAt = new Date();
+//           expiresAt.setMonth(expiresAt.getMonth() + 6); // Coins valid for 6 months
+
+//           let superCoin = await supercoin.findOne({ userId });
+
+//           if (!superCoin) {
+//             superCoin = new supercoin({ userId, coins: 0, history: [] });
+//           }
+
+//           superCoin.coins += coinsToAdd;
+//           superCoin.history.push({
+//             type: "purchase",
+//             coins: coinsToAdd,
+//             description: `Earned ${coinsToAdd} coin(s) on purchase of ₹${totalAmount}`,
+//             expiresAt,
+//           });
+
+//           await superCoin.save();
+//         }
+//       }
+//       // 🪙 SuperCoin reward logic ends here
+
+//       await Cart.deleteOne({ _id: cartId });
+
+//       return res.json({ status: "Payment verified and marked completed" });
+//     } else {
+//       payment.status = "failed";
+//       await payment.save();
+
+//       return res
+//         .status(400)
+//         .json({ status: "Invalid signature. Payment marked failed" });
+//     }
+//   } catch (err) {
+//     console.error("Payment verification error:", err);
+//     res.status(500).json({ status: "Internal server error" });
+//   }
+// });
+
 app.post("/api/payment/verify", async (req, res) => {
   try {
     const {
@@ -299,7 +544,6 @@ app.post("/api/payment/verify", async (req, res) => {
 
     const isValid = expectedSignature === razorpay_signature;
 
-    // 🧠 Get payment entry using transactionId = razorpay_order_id
     const payment = await Payment.findOne({ transactionId: razorpay_order_id });
 
     if (!payment) {
@@ -311,9 +555,35 @@ app.post("/api/payment/verify", async (req, res) => {
       payment.signature = razorpay_signature;
       await payment.save();
 
-      // 🪙 SuperCoin reward logic starts here
       const cart = await Cart.findById(cartId).populate("items.productId");
+
       if (cart) {
+        const userId = cart.userId;
+
+        // 🪙 Deduct SuperCoins if used
+        const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
+        const { notes } = razorpayOrder;
+
+        if (notes?.useSuperCoins === "true" && Number(notes.coinsToUse) > 0) {
+          const coinsToUse = Number(notes.coinsToUse);
+
+          let superCoinData = await SuperCoin.findOne({ userId });
+          if (superCoinData) {
+            const availableCoins = superCoinData.coins || 0;
+
+            if (coinsToUse <= availableCoins) {
+              superCoinData.coins -= coinsToUse;
+              superCoinData.history.push({
+                type: "redeem",
+                coins: coinsToUse,
+                description: `Used ${coinsToUse} coins for order payment`,
+              });
+              await superCoinData.save();
+            }
+          }
+        }
+
+        // 🪙 Reward coins
         const totalAmount = cart.items.reduce((acc, item) => {
           const price =
             item.priceAtAdd || (item.productId && item.productId.price) || 0;
@@ -323,14 +593,12 @@ app.post("/api/payment/verify", async (req, res) => {
         const coinsToAdd = Math.floor(totalAmount / 150);
 
         if (coinsToAdd > 0) {
-          const userId = cart.userId;
           const expiresAt = new Date();
-          expiresAt.setMonth(expiresAt.getMonth() + 6); // Coins valid for 6 months
+          expiresAt.setMonth(expiresAt.getMonth() + 6);
 
-          let superCoin = await supercoin.findOne({ userId });
-
+          let superCoin = await SuperCoin.findOne({ userId });
           if (!superCoin) {
-            superCoin = new supercoin({ userId, coins: 0, history: [] });
+            superCoin = new SuperCoin({ userId, coins: 0, history: [] });
           }
 
           superCoin.coins += coinsToAdd;
@@ -344,7 +612,6 @@ app.post("/api/payment/verify", async (req, res) => {
           await superCoin.save();
         }
       }
-      // 🪙 SuperCoin reward logic ends here
 
       await Cart.deleteOne({ _id: cartId });
 
@@ -362,6 +629,10 @@ app.post("/api/payment/verify", async (req, res) => {
     res.status(500).json({ status: "Internal server error" });
   }
 });
+
+
+
+
 
 app.get("/get-profile", authMiddleware, async (req, res) => {
   try {
