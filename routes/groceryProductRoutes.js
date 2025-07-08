@@ -14,8 +14,8 @@ router.post("/create", upload.single("image"), productController.createProduct);
 // }, productController.createProduct);
 
 router.get("/get-all", productController.getAllProducts);
-router.get("/get-by-id/:id", productController.getProductById);
-router.get("/get-by-subcategory/:subcategoryId", productController.getProductsBySubcategory);
+// router.get("/get-by-id/:id", productController.getProductById);
+router.get("/:subcategoryId", productController.getProductsBySubcategory);
 
 
 router.put("/update/:id", upload.single("image"), productController.updateProduct);
