@@ -22,7 +22,6 @@ router.post("/categories", authAdmin, category.createCategory);
 router.get("/categories", category.getAllCategories);
 router.get(
   "/categories/with-subcategories",
-  authAdmin,
   category.getCategoriesWithSubcategories
 );
 

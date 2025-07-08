@@ -10,6 +10,10 @@ const planSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    mrp: {
+      type: Number,
+      required: true, // ✅ new field
+    },
     durationInDays: {
       type: Number,
       required: true, // e.g., 30, 90, 180
