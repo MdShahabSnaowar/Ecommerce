@@ -1,5 +1,5 @@
-const Medicine = require("../models/MedicineProduct");
-
+// const Medicine = require("../models/MedicineProduct");
+const MedicineProduct = require("../models/MedicineProduct");
 // Create
 exports.createMedicine = async (req, res) => {
   try {
@@ -73,5 +73,35 @@ exports.deleteMedicine = async (req, res) => {
     res.json({ success: true, message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
+
+exports.getProductsBySubcategory = async (req, res) => {
+  try {
+    const { subcategoryId } = req.params;
+
+    if (!subcategoryId) {
+      return res.status(400).json({ success: false, message: "Subcategory ID is required" });
+    }
+
+    const products = await MedicineProduct.find({ subcategoryId })
+      .populate("subcategoryId", "name")
+      .populate("categoryId", "name");
+
+    if (products.length === 0) {
+      return res.status(404).json({ success: false, message: "No products found in this subcategory" });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (err) {
+    console.error("Error fetching products by subcategory:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
