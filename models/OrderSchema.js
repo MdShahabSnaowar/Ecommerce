@@ -19,8 +19,8 @@ const orderSchema = new Schema({
   ],
   status: {
     type: String,
-    enum: ["shipped", "outfor delivery", "delivered", "cancelled"], 
-    default: "shipped",
+    enum: ["OrderPlaced", "shipped", "outfor delivery", "delivered", "cancelled"], // ✅ Added OrderPlaced
+    default: "OrderPlaced", 
   },
   totalAmount: {
     type: Number,

@@ -367,7 +367,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       userId,
       products: formattedProducts,
       totalAmount: amount,
-      status: paymentMode === "COD" ? "shipped" : "shipped",
+      status: paymentMode === "COD" ? "OrderPlaced" : "OrderPlaced",
       deliveryAddress: selectedAddress,
       expressDelivery: expressDelivery === true,
     });
@@ -419,7 +419,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         ...paymentData,
         transactionId: `COD_${Date.now()}`,
         signature: "N/A",
-        status: "shipped",
+        status: "OrderPlaced",
       };
 
       const payment = new Payment(paymentData);
