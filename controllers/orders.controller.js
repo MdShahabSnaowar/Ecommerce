@@ -46,7 +46,8 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(400).json({ error: "Invalid status provided" });
     }
 
-    const order = await Order.findById(orderId);
+    const order = await OrderSchema.findById(orderId);
+
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
