@@ -8,6 +8,9 @@ const upload = require("../config/multer");
 const FruitsVegCategory = require("../models/FruitsVegCategory");
 const FruitsVegSubcategory = require("../models/FruitsVegSubcategory");
 const FruitsVegProduct = require("../models/FruitsVegProduct");
+const MedicineCategory = require("../models/MedicineCategory");
+const MedicineSubcategory = require("../models/MedicineSubcategory");
+const MedicineProduct = require("../models/MedicineProduct");
 const MilkCategory = require("../models/MilkCategory");
 const MilkProduct = require("../models/MilkProduct");
 const GroceryCategory = require("../models/GroceryCategory");
@@ -67,8 +70,8 @@ router.delete("/product/:id", authAdmin,product.deleteProduct);
 router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
   try {
     const { type } = req.body;
-    console.log("🔍 File:", req.file);
-    console.log("🔍 Body Type:", req.body.type);
+    // console.log("🔍 File:", req.file);
+    // console.log("🔍 Body Type:", req.body.type);
 
     if (!req.file || !type) {
       return res.status(400).json({ success: false, message: "File and type are required" });
@@ -336,6 +339,122 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       });
     }
 
+    else if (type === "Medicine") {
+      const medicineCategoryIdMap = {};
+      const medicineSubcategoryIdMap = {};
+      const insertedProducts = [];
+      const skippedCategories = [];
+      const skippedSubcategories = [];
+      const skippedProducts = [];
+
+      for (const cat of jsonData.medicineCategories) {
+        try {
+          let existing = await MedicineCategory.findOne({ name: cat.name });
+          if (existing) {
+            medicineCategoryIdMap[cat.id] = existing._id;
+            skippedCategories.push(`"${cat.name}" (duplicate)`);
+            continue;
+          }
+
+          const newCat = await MedicineCategory.create({
+            name: cat.name,
+            description: cat.description,
+          });
+
+          medicineCategoryIdMap[cat.id] = newCat._id;
+        } catch (err) {
+          skippedCategories.push(`"${cat.name}" (error: ${err.message})`);
+        }
+      }
+
+      for (const sub of jsonData.medicineSubcategories) {
+        const categoryId = medicineCategoryIdMap[sub.categoryId];
+        if (!categoryId) {
+          skippedSubcategories.push(`"${sub.name}" (categoryId missing)`);
+          continue;
+        }
+
+        try {
+          let existing = await MedicineSubcategory.findOne({
+            name: sub.name,
+            categoryId,
+          });
+
+          if (existing) {
+            medicineSubcategoryIdMap[sub.id] = existing._id;
+            skippedSubcategories.push(`"${sub.name}" (duplicate)`);
+            continue;
+          }
+
+          const newSub = await MedicineSubcategory.create({
+            name: sub.name,
+            description: sub.description,
+            categoryId,
+          });
+
+          medicineSubcategoryIdMap[sub.id] = newSub._id;
+        } catch (err) {
+          skippedSubcategories.push(`"${sub.name}" (error: ${err.message})`);
+        }
+      }
+
+      for (const prod of jsonData.medicineProducts) {
+        const catId = medicineCategoryIdMap[prod.categoryId];
+        const subcatId = medicineSubcategoryIdMap[prod.subcategoryId];
+
+        if (!catId || !subcatId) {
+          skippedProducts.push(`"${prod.name}" (missing category/subcategory)`);
+          continue;
+        }
+
+        try {
+          const existing = await MedicineProduct.findOne({
+            name: prod.name,
+            categoryId: catId,
+            subcategoryId: subcatId,
+          });
+
+          if (existing) {
+            skippedProducts.push(`"${prod.name}" (duplicate)`);
+            continue;
+          }
+
+          const newProd = await MedicineProduct.create({
+            name: prod.name,
+            brand: prod.brand,
+            categoryId: catId,
+            subcategoryId: subcatId,
+            price: prod.price,
+            mrp: prod.mrp,
+            discount: prod.discount,
+            stock: prod.stock,
+            description: prod.description,
+            expiryDate: prod.expiryDate,
+            image: prod.image,
+          });
+
+          insertedProducts.push(newProd.name);
+        } catch (err) {
+          skippedProducts.push(`"${prod.name}" (error: ${err.message})`);
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Medicine data imported",
+        data: {
+          insertedProductsCount: insertedProducts.length,
+          skippedProductsCount: skippedProducts.length,
+          skippedProducts,
+          skippedSubcategories,
+          skippedCategories,
+        },
+      });
+    }
+    
+
+
+
     return res.status(400).json({
       success: false,
       message: "Invalid type value. Use 'Fruits&Vegetables', 'Milk', or 'Grocery'",
@@ -357,6 +476,7 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
       message: "Something went wrong while importing data. Please try again.",
     });
   }
+  
 });
 
 

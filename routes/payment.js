@@ -28,7 +28,7 @@ router.post("/subscribe", authMiddleware, async (req, res) => {
       },
     };
 
-    console.log(options);
+    // console.log(options);
     const razorpayOrder = await razorpay.orders.create(options);
 
     res.json({

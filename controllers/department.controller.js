@@ -5,7 +5,7 @@ exports.createDepartment = async (req, res) => {
   try {
     const { name, description } = req.body;
     const image = req.file ? req.file.filename : null;
-    console.log("Received file:", req.file);
+    // console.log("Received file:", req.file);
     const department = new Department({ name, description, image });
     await department.save();
 

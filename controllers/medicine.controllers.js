@@ -1,4 +1,4 @@
-const Medicine = require("../models/medicines");
+const Medicine = require("../models/MedicineProduct");
 
 // Create
 exports.createMedicine = async (req, res) => {

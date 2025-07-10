@@ -22,11 +22,11 @@ async function findProductByType(productId, type) {
 
     const product = await model.findById(productId);
     if (product) {
-      console.log(`Found product ${productId} in ${type}:`, product);
+      // console.log(`Found product ${productId} in ${type}:`, product);
       return { product, itemType: type };
     }
 
-    console.log(`Product ${productId} not found in ${type}`);
+    // console.log(`Product ${productId} not found in ${type}`);
     return null;
   } catch (err) {
     console.error("Error finding product by type:", err);
@@ -62,18 +62,18 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [], totalPrice: 0 });
-      console.log("Created new cart for user:", userId);
+      // console.log("Created new cart for user:", userId);
     }
 
     for (const { productId, quantity, type } of items) {
       if (!productId || !quantity || quantity < 1 || !type) {
-        console.log(`Skipping invalid item: productId=${productId}, quantity=${quantity}, type=${type}`);
+        // console.log(`Skipping invalid item: productId=${productId}, quantity=${quantity}, type=${type}`);
         continue;
       }
 
       const result = await findProductByType(productId, type);
       if (!result) {
-        console.log(`Product not found: ${productId}`);
+        // console.log(`Product not found: ${productId}`);
         continue;
       }
 

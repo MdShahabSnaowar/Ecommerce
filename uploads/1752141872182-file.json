@@ -1,0 +1,895 @@
+{
+
+  "medicineCategories" :[
+  {
+    "id": "21",
+    "name": "Hair Care",
+    "description": "Products for hair care and maintenance"
+  },
+  {
+    "id": "20",
+    "name": "Bath & Body Care",
+    "description": "Products for personal hygiene and body care"
+  },
+  {
+    "id": "5",
+    "name": "Skin Care",
+    "description": "Products for skin care and protection"
+  },
+  {
+    "id": "24",
+    "name": "Vitamins & Supplements",
+    "description": "Nutritional supplements and vitamins"
+  },
+  {
+    "id": "27",
+    "name": "Health Device & Surgical",
+    "description": "Medical devices and surgical equipment"
+  },
+  {
+    "id": "29",
+    "name": "Stomach Care",
+    "description": "Products for stomach health and digestion"
+  },
+  {
+    "id": "30",
+    "name": "Liver Care",
+    "description": "Products for liver health and maintenance"
+  },
+  {
+    "id": "31",
+    "name": "Pain Relief",
+    "description": "Products for pain management and relief"
+  },
+  {
+    "id": "32",
+    "name": "Feminine Hygiene & Care",
+    "description": "Products for feminine hygiene and care"
+  },
+  {
+    "id": "33",
+    "name": "Elderly Care",
+    "description": "Products for elderly care and support"
+  },
+  {
+    "id": "34",
+    "name": "Sexual Wellness",
+    "description": "Products for sexual health and wellness"
+  },
+  {
+    "id": "35",
+    "name": "Baby care",
+    "description": "Products for baby care and hygiene"
+  },
+  {
+    "id": "36",
+    "name": "Over The Counter Medicine (OTC)",
+    "description": "Over-the-counter medications"
+  },
+  {
+    "id": "37",
+    "name": "Respiratory",
+    "description": "Products for respiratory health"
+  }
+],
+
+
+
+"medicineSubcategories":[
+  {
+    "id": "94",
+    "name": "Shampoos",
+    "categoryId": "21",
+    "description": "Hair cleansing products"
+  },
+  {
+    "id": "95",
+    "name": "Conditioner",
+    "categoryId": "21",
+    "description": "Hair conditioning products"
+  },
+  {
+    "id": "96",
+    "name": "Hair Serum",
+    "categoryId": "21",
+    "description": "Hair treatment serums"
+  },
+  {
+    "id": "97",
+    "name": "Hair Oil",
+    "categoryId": "21",
+    "description": "Hair nourishing oils"
+  },
+  {
+    "id": "98",
+    "name": "Hair Colour",
+    "categoryId": "21",
+    "description": "Hair coloring products"
+  },
+  {
+    "id": "86",
+    "name": "Handwash",
+    "categoryId": "20",
+    "description": "Hand cleaning products"
+  },
+  {
+    "id": "87",
+    "name": "Body Wash & Shower Gel",
+    "categoryId": "20",
+    "description": "Body cleansing products"
+  },
+  {
+    "id": "88",
+    "name": "Bath Soaps",
+    "categoryId": "20",
+    "description": "Bar soaps for bathing"
+  },
+  {
+    "id": "89",
+    "name": "Toothpaste",
+    "categoryId": "20",
+    "description": "Dental cleaning products"
+  },
+  {
+    "id": "90",
+    "name": "Mouthwash",
+    "categoryId": "20",
+    "description": "Oral rinse products"
+  },
+  {
+    "id": "91",
+    "name": "Toothbrush",
+    "categoryId": "20",
+    "description": "Dental cleaning tools"
+  },
+  {
+    "id": "93",
+    "name": "Talcum Powder",
+    "categoryId": "20",
+    "description": "Body powder products"
+  },
+  {
+    "id": "8",
+    "name": "Sun Care",
+    "categoryId": "5",
+    "description": "Sun protection products"
+  },
+  {
+    "id": "20",
+    "name": "Face & Body Moisturizers",
+    "categoryId": "5",
+    "description": "Skin hydration products"
+  },
+  {
+    "id": "92",
+    "name": "Facewash & Scrubs",
+    "categoryId": "5",
+    "description": "Facial cleansing products"
+  },
+  {
+    "id": "130",
+    "name": "Serums & Essence",
+    "categoryId": "5",
+    "description": "Skin treatment serums"
+  },
+  {
+    "id": "131",
+    "name": "Eye & Lip care",
+    "categoryId": "5",
+    "description": "Products for eye and lip care"
+  },
+  {
+    "id": "132",
+    "name": "Face & Sheet mask",
+    "categoryId": "5",
+    "description": "Facial treatment masks"
+  },
+  {
+    "id": "153",
+    "name": "Herbal Drinks",
+    "categoryId": "36",
+    "description": "Ayurvedic and herbal beverages"
+  }
+],
+
+"medicineProducts":[
+  {
+    "id": "71",
+    "name": "Dot & Key Vitamin C + E Super Bright Sunscreen SPF50: 50 gms",
+    "brand": "Dot & Key",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 387.00,
+    "mrp": 445,
+    "discount": 13,
+    "stock": 100,
+    "description": "SPF 50 PA+++ sunscreen with Vitamin C and E for skin protection and radiance",
+    "expiryDate": "2025-12-31",
+    "image": ""
+  },
+  {
+    "id": "90",
+    "name": "Neutrogena Ultra Sheer Sunscreen (SPF 50+)",
+    "brand": "Neutrogena",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 650.00,
+    "mrp": 780,
+    "discount": 17,
+    "stock": 75,
+    "description": "Lightweight SPF 50+ sunscreen for face and body protection",
+    "expiryDate": "2024-06-30",
+    "image": ""
+  },
+  {
+    "id": "96",
+    "name": "mCaffeine Coffee Powder Sunscreen SPF 50: 4 gms",
+    "brand": "mCaffeine",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 450.00,
+    "mrp": 649,
+    "discount": 31,
+    "stock": 50,
+    "description": "Coffee-infused SPF 50 sunscreen with antioxidant properties",
+    "expiryDate": "2025-03-15",
+    "image": ""
+  },
+  {
+    "id": "94",
+    "name": "mCaffeine Coffee Sunscreen Lotion SPF 50: 50 ml",
+    "brand": "mCaffeine",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 339.00,
+    "mrp": 399,
+    "discount": 15,
+    "stock": 60,
+    "description": "SPF 50 PA++ sunscreen lotion with coffee and vitamin E",
+    "expiryDate": "2025-05-20",
+    "image": ""
+  },
+  {
+    "id": "98",
+    "name": "Zandu Amla Juice 1 L",
+    "brand": "Zandu",
+    "categoryId": "36",
+    "subcategoryId": "153",
+    "price": 225.00,
+    "mrp": 265,
+    "discount": 15,
+    "stock": 40,
+    "description": "Ayurvedic amla juice with immunity boosting properties",
+    "expiryDate": "2024-11-30",
+    "image": ""
+  },
+  {
+    "id": "99",
+    "name": "Zandu Aloe Vera Juice 1 L",
+    "brand": "Zandu",
+    "categoryId": "36",
+    "subcategoryId": "153",
+    "price": 248.00,
+    "mrp": 295,
+    "discount": 16,
+    "stock": 35,
+    "description": "Aloe vera juice for digestive health and skin benefits",
+    "expiryDate": "2024-10-15",
+    "image": ""
+  },
+  {
+    "id": "102",
+    "name": "Kapiva Ayurveda Aloe Vera Juice: 1 Litre",
+    "brand": "Kapiva",
+    "categoryId": "36",
+    "subcategoryId": "153",
+    "price": 249.00,
+    "mrp": 299,
+    "discount": 17,
+    "stock": 45,
+    "description": "Ayurvedic aloe vera juice for skin and digestive health",
+    "expiryDate": "2024-09-30",
+    "image": ""
+  },
+  {
+    "id": "113",
+    "name": "Cetaphil Light Sunscreen Gel (SPF 50+)",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 1063.00,
+    "mrp": 1182,
+    "discount": 10,
+    "stock": 30,
+    "description": "Lightweight SPF 50+ sunscreen gel for all skin types",
+    "expiryDate": "2025-08-31",
+    "image": ""
+  },
+  {
+    "id": "114",
+    "name": "La Shield Mineral Sunscreen - 50 g (SPF 50 PA+++)",
+    "brand": "La Shield",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 272.00,
+    "mrp": 320,
+    "discount": 15,
+    "stock": 55,
+    "description": "Mineral-based SPF 50 sunscreen with pollution protection",
+    "expiryDate": "2025-04-30",
+    "image": ""
+  },
+  {
+    "id": "115",
+    "name": "Lotus Herbals UV Screen Matte Gel SPF 50 UVB",
+    "brand": "Lotus Herbals",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 331.00,
+    "mrp": 435,
+    "discount": 24,
+    "stock": 65,
+    "description": "Matte finish SPF 50 sunscreen gel for sun protection",
+    "expiryDate": "2025-07-31",
+    "image": ""
+  },
+  {
+    "id": "117",
+    "name": "Lotus Herbals Sunscreen Cream SPF 30 UVB: 100 gms",
+    "brand": "Lotus Herbals",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 326.00,
+    "mrp": 435,
+    "discount": 25,
+    "stock": 80,
+    "description": "SPF 30 sunscreen cream offering broad-spectrum protection against UVA & UVB rays",
+    "expiryDate": "2025-09-30",
+    "image": ""
+  },
+  {
+    "id": "118",
+    "name": "Mamaearth Vitamin C Daily Glow Sunscreen 50 g (SPF 50)",
+    "brand": "Mamaearth",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 317.00,
+    "mrp": 349,
+    "discount": 9,
+    "stock": 65,
+    "description": "SPF 50 sunscreen with Vitamin C for daily sun protection and glow",
+    "expiryDate": "2025-05-15",
+    "image": ""
+  },
+  {
+    "id": "121",
+    "name": "Dot & Key Skincare Strawberry Sunscreen Spf 50 Porcelain: 50 ml",
+    "brand": "Dot & Key",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 511.00,
+    "mrp": 549,
+    "discount": 7,
+    "stock": 45,
+    "description": "Tinted SPF 50 sunscreen with strawberry extracts for sun protection and glow",
+    "expiryDate": "2025-08-20",
+    "image": ""
+  },
+  {
+    "id": "122",
+    "name": "Dot & Key Skincare Strawberry Sunscreen Spf 50 05 Beige: 50 ml",
+    "brand": "Dot & Key",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 511.00,
+    "mrp": 549,
+    "discount": 7,
+    "stock": 50,
+    "description": "Beige tinted SPF 50 sunscreen for even skin tone and sun protection",
+    "expiryDate": "2025-08-20",
+    "image": ""
+  },
+  {
+    "id": "124",
+    "name": "Plum Rice Water & Naicinamide 2% Hybrid Sunscreen: 50 gms",
+    "brand": "Plum",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 333.00,
+    "mrp": 399,
+    "discount": 17,
+    "stock": 55,
+    "description": "SPF 50 PA+++ hybrid sunscreen with rice water and niacinamide",
+    "expiryDate": "2025-06-30",
+    "image": ""
+  },
+  {
+    "id": "154",
+    "name": "VLCC Sun Screen Gel 50 g",
+    "brand": "VLCC",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 228.00,
+    "mrp": 285,
+    "discount": 20,
+    "stock": 70,
+    "description": "Lightweight gel-based SPF sunscreen with Vitamin B3 and fruit extracts",
+    "expiryDate": "2024-12-31",
+    "image": ""
+  },
+  {
+    "id": "155",
+    "name": "Plum Cica & Hyaluronic Acid Aqua-Light Sunscreen SPF 50: 50 gm",
+    "brand": "Plum",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 358.00,
+    "mrp": 399,
+    "discount": 10,
+    "stock": 60,
+    "description": "SPF 50 PA+++ sunscreen with cica and hyaluronic acid for hydration",
+    "expiryDate": "2025-07-15",
+    "image": ""
+  },
+  {
+    "id": "192",
+    "name": "Joy Honey & Almond Nourishing Skin Cream: 200 ml",
+    "brand": "Joy",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 200.00,
+    "mrp": 240,
+    "discount": 17,
+    "stock": 90,
+    "description": "Nourishing cream with honey and almond for dry skin",
+    "expiryDate": "2026-01-31",
+    "image": ""
+  },
+  {
+    "id": "193",
+    "name": "Nivea Soft Light Moisturizing Cream (100 ml)",
+    "brand": "Nivea",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 229.00,
+    "mrp": 250,
+    "discount": 8,
+    "stock": 85,
+    "description": "Light moisturizing cream with jojoba oil and vitamin E",
+    "expiryDate": "2025-11-30",
+    "image": ""
+  },
+  {
+    "id": "194",
+    "name": "Nivea Soft Moisturizing Cream 300ml",
+    "brand": "Nivea",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 390.00,
+    "mrp": 650,
+    "discount": 40,
+    "stock": 75,
+    "description": "Fast-absorbing moisturizing cream with jojoba oil and vitamin E",
+    "expiryDate": "2025-10-31",
+    "image": ""
+  },
+  {
+    "id": "195",
+    "name": "Lakme Peach Milk Soft Moisturizing Cream 100GM",
+    "brand": "Lakme",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 256.00,
+    "mrp": 284,
+    "discount": 10,
+    "stock": 50,
+    "description": "Infused with the goodness of peaches and milk. This light moisturizer has a soothing fragrance. For best results - use every day for nourished skin that glows",
+    "expiryDate": "2025-12-31",
+    "image": "https://example.com/medicines/lakme-cream.jpg"
+  },
+  {
+    "id": "196",
+    "name": "Joy Pure Aloe Skin Cream: 200 ml",
+    "brand": "Joy",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 145.00,
+    "mrp": 240,
+    "discount": 40,
+    "stock": 30,
+    "description": "Contains Aloe Vera for dryness relief. Suitable for dry skin types.",
+    "expiryDate": "2026-06-30",
+    "image": "https://example.com/medicines/joy-aloe.jpg"
+  },
+  {
+    "id": "197",
+    "name": "Ponds Super Light Moisturizing Gel 200ML",
+    "brand": "Ponds",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 382.00,
+    "mrp": 545,
+    "discount": 30,
+    "stock": 45,
+    "description": "Contains Hyaluronic acid and Vitamin E. Suitable for all skin types.",
+    "expiryDate": "2025-11-30",
+    "image": "https://example.com/medicines/ponds-gel.jpg"
+  },
+  {
+    "id": "198",
+    "name": "Dot & Key Cica + Niacinamide Oil-Free Moisturizer: 60 ml",
+    "brand": "Dot & Key",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 451.00,
+    "mrp": 495,
+    "discount": 9,
+    "stock": 25,
+    "description": "Contains Aloe Barbadensis (Aloe Vera) Leaf Juice and Glycerine.",
+    "expiryDate": "2026-03-31",
+    "image": "https://example.com/medicines/dot-key.jpg"
+  },
+  {
+    "id": "199",
+    "name": "Cetaphil Moisturising Lotion for Face & Body, Normal to dry skin,500 ml",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 1563.00,
+    "mrp": 1599,
+    "discount": 2,
+    "stock": 15,
+    "description": "Gentle on sensitive skin with deep hydration formula. Non-greasy and lightweight. Fragrance-free and dermatologist recommended.",
+    "expiryDate": "2026-01-31",
+    "image": "https://example.com/medicines/cetaphil-lotion.jpg"
+  },
+  {"id": "200",
+    "name": "Cetaphil Galderma Moisturising Lotion,250M",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 1090.00,
+    "mrp": 1299,
+    "discount": 16,
+    "stock": 20,
+    "description": "For dry skin with no added fragrances. Won't clog pores and non-irritating.",
+    "expiryDate": "2026-02-28",
+    "image": "https://example.com/medicines/cetaphil-galderma.jpg"
+  },
+  {"id": "201",
+    "name": "Cetaphil Moisturising Cream for Face & Body , Dry to Normal skin, 80 gm",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 542.00,
+    "mrp": 599,
+    "discount": 10,
+    "stock": 35,
+    "description": "For dry skin with no added fragrances. Provides moisturisation for 48 hours.",
+    "expiryDate": "2025-10-31",
+    "image": "https://example.com/medicines/cetaphil-cream.jpg"
+  },
+  {
+    "id": "202",
+    "name": "Cetaphil Brightening Night Comfort Cream - 50 g",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 1079.00,
+    "mrp": 1199,
+    "discount": 10,
+    "stock": 18,
+    "description": "Helps brighten and even out skin tone. Replenishes skin moisture for radiant skin.",
+    "expiryDate": "2026-04-30",
+    "image": "https://example.com/medicines/cetaphil-night.jpg"
+  },
+  {
+    "id": "203",
+    "name": "Cetaphil Optimal Hydration Daily Cream 50g | Lightweight Moisturizer & Fast Absorption",
+    "brand": "Cetaphil",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 1139.00,
+    "mrp": 1299,
+    "discount": 12,
+    "stock": 22,
+    "description": "Provides 48-hour intense moisture plumping. Boosts skin's water by 50% with Hydrosensitive™ Complex.",
+    "expiryDate": "2026-05-31",
+    "image": "https://example.com/medicines/cetaphil-optimal.jpg"
+  },
+  {
+    "id": "205",
+    "name": "Pilgrim Squalane Niacinamide & Vitamin C Glow Moisturizer for face 50G",
+    "brand": "Pilgrim Squalane",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 445.00,
+    "mrp": 550,
+    "discount": 19,
+    "stock": 28,
+    "description": "Brightens skin with deep hydration. Reduces appearance of wrinkles. Suitable for both men and women.",
+    "expiryDate": "2025-09-30",
+    "image": "https://example.com/medicines/pilgrim.jpg"
+  },
+  {
+    "id": "206",
+    "name": "Neutrogena Hydro Boost Hyaluronic Acid Face Moisturizer 50ml",
+    "brand": "Neutrogena",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 1035.00,
+    "mrp": 1150,
+    "discount": 10,
+    "stock": 12,
+    "description": "With Hyaluronic Acid, instantly absorbed. Effectively locks in abundant hydration deep within your skin.",
+    "expiryDate": "2026-07-31",
+    "image": "https://example.com/medicines/neutrogena.jpg"
+  },
+   {
+    "id": "171",
+    "name": "Dot & Key Vitamin C + E Super Bright Sunscreen SPF50: 50 gms",
+    "brand": "Dot & Key",
+    "categoryId": "5",
+    "subcategoryId": "8",
+    "price": 387.00,
+    "mrp": 445,
+    "discount": 13,
+    "stock": 100,
+    "description": "SPF 50 PA+++ sunscreen with Vitamin C and E for skin protection and radiance",
+    "expiryDate": "2025-12-31",
+    "image": ""
+  },
+  {
+    "id": "207",
+    "name": "Tresemme Keratin Smooth Shampoo - 580 ml",
+    "brand": "Tresemme",
+    "categoryId": "21",
+    "subcategoryId": "94",
+    "price": 420.00,
+    "mrp": 500,
+    "discount": 16,
+    "stock": 80,
+    "description": "Keratin smooth shampoo for frizz-free, shiny hair",
+    "expiryDate": "2026-03-31",
+    "image": ""
+  },
+  {
+    "id": "208",
+    "name": "L'Oreal Paris 6 Oil Nourish Conditioner - 175 ml",
+    "brand": "L'Oreal",
+    "categoryId": "21",
+    "subcategoryId": "95",
+    "price": 180.00,
+    "mrp": 200,
+    "discount": 10,
+    "stock": 65,
+    "description": "Nourishing conditioner with 6 precious oils",
+    "expiryDate": "2025-11-30",
+    "image": ""
+  },
+  {
+    "id": "209",
+    "name": "Schwarzkopf Professional BC Hair Serum - 50 ml",
+    "brand": "Schwarzkopf",
+    "categoryId": "21",
+    "subcategoryId": "96",
+    "price": 550.00,
+    "mrp": 650,
+    "discount": 15,
+    "stock": 45,
+    "description": "Professional hair serum for smooth and shiny hair",
+    "expiryDate": "2025-10-15",
+    "image": ""
+  },
+  {
+    "id": "210",
+    "name": "Parachute Advansed Coconut Hair Oil - 300 ml",
+    "brand": "Parachute",
+    "categoryId": "21",
+    "subcategoryId": "97",
+    "price": 150.00,
+    "mrp": 180,
+    "discount": 17,
+    "stock": 120,
+    "description": "Pure coconut hair oil for deep nourishment",
+    "expiryDate": "2026-02-28",
+    "image": ""
+  },
+  {
+    "id": "211",
+    "name": "Garnier Color Naturals Hair Color - Black",
+    "brand": "Garnier",
+    "categoryId": "21",
+    "subcategoryId": "98",
+    "price": 250.00,
+    "mrp": 300,
+    "discount": 17,
+    "stock": 60,
+    "description": "Natural looking hair color with plant extracts",
+    "expiryDate": "2025-09-30",
+    "image": ""
+  },
+  {
+    "id": "212",
+    "name": "Dettol Original Handwash - 250 ml",
+    "brand": "Dettol",
+    "categoryId": "20",
+    "subcategoryId": "86",
+    "price": 85.00,
+    "mrp": 100,
+    "discount": 15,
+    "stock": 150,
+    "description": "Antibacterial handwash for complete protection",
+    "expiryDate": "2026-01-31",
+    "image": ""
+  },
+  {
+    "id": "213",
+    "name": "Dove Deeply Nourishing Body Wash - 400 ml",
+    "brand": "Dove",
+    "categoryId": "20",
+    "subcategoryId": "87",
+    "price": 220.00,
+    "mrp": 250,
+    "discount": 12,
+    "stock": 90,
+    "description": "Nourishing body wash with NutriumMoisture technology",
+    "expiryDate": "2025-12-15",
+    "image": ""
+  },
+  {
+    "id": "214",
+    "name": "Lux International Creamy Perfection Soap - 125 g",
+    "brand": "Lux",
+    "categoryId": "20",
+    "subcategoryId": "88",
+    "price": 45.00,
+    "mrp": 50,
+    "discount": 10,
+    "stock": 200,
+    "description": "Creamy bathing soap with floral fragrance",
+    "expiryDate": "2026-04-30",
+    "image": ""
+  },
+  {
+    "id": "215",
+    "name": "Colgate Strong Teeth Toothpaste - 200 g",
+    "brand": "Colgate",
+    "categoryId": "20",
+    "subcategoryId": "89",
+    "price": 110.00,
+    "mrp": 125,
+    "discount": 12,
+    "stock": 180,
+    "description": "Toothpaste for strong teeth and fresh breath",
+    "expiryDate": "2025-11-30",
+    "image": ""
+  },
+  {
+    "id": "216",
+    "name": "Listerine Cool Mint Mouthwash - 250 ml",
+    "brand": "Listerine",
+    "categoryId": "20",
+    "subcategoryId": "90",
+    "price": 150.00,
+    "mrp": 175,
+    "discount": 14,
+    "stock": 75,
+    "description": "Antiseptic mouthwash for complete oral care",
+    "expiryDate": "2026-03-15",
+    "image": ""
+  },
+  {
+    "id": "217",
+    "name": "Oral-B Cross Action Toothbrush - Medium",
+    "brand": "Oral-B",
+    "categoryId": "20",
+    "subcategoryId": "91",
+    "price": 120.00,
+    "mrp": 150,
+    "discount": 20,
+    "stock": 130,
+    "description": "Advanced cleaning toothbrush with cross-action bristles",
+    "expiryDate": "2025-10-31",
+    "image": ""
+  },
+  {
+    "id": "218",
+    "name": "Ponds Dreamflower Talc - 200 g",
+    "brand": "Ponds",
+    "categoryId": "20",
+    "subcategoryId": "93",
+    "price": 95.00,
+    "mrp": 110,
+    "discount": 14,
+    "stock": 85,
+    "description": "Floral talcum powder for fresh feeling",
+    "expiryDate": "2026-05-31",
+    "image": ""
+  },
+  {
+    "id": "219",
+    "name": "Neutrogena Hydro Boost Water Gel - 50 g",
+    "brand": "Neutrogena",
+    "categoryId": "5",
+    "subcategoryId": "20",
+    "price": 999.00,
+    "mrp": 1199,
+    "discount": 17,
+    "stock": 40,
+    "description": "Hydrating water gel with hyaluronic acid",
+    "expiryDate": "2025-12-31",
+    "image": ""
+  },
+  {
+    "id": "220",
+    "name": "Garnier Skin Naturals Face Wash - 150 g",
+    "brand": "Garnier",
+    "categoryId": "5",
+    "subcategoryId": "92",
+    "price": 135.00,
+    "mrp": 150,
+    "discount": 10,
+    "stock": 110,
+    "description": "Gentle face wash with natural extracts",
+    "expiryDate": "2026-02-28",
+    "image": ""
+  },
+  {
+    "id": "221",
+    "name": "The Ordinary Niacinamide 10% Serum - 30 ml",
+    "brand": "The Ordinary",
+    "categoryId": "5",
+    "subcategoryId": "130",
+    "price": 850.00,
+    "mrp": 1000,
+    "discount": 15,
+    "stock": 35,
+    "description": "High-strength vitamin and mineral blemish formula",
+    "expiryDate": "2025-10-15",
+    "image": ""
+  },
+  {
+    "id": "222",
+    "name": "Biotique Bio Almond Under Eye Cream - 20 g",
+    "brand": "Biotique",
+    "categoryId": "5",
+    "subcategoryId": "131",
+    "price": 175.00,
+    "mrp": 200,
+    "discount": 13,
+    "stock": 60,
+    "description": "Ayurvedic under eye cream with almond extracts",
+    "expiryDate": "2025-11-30",
+    "image": ""
+  },
+  {
+    "id": "223",
+    "name": "Innisfree My Real Squeeze Mask - Aloe",
+    "brand": "Innisfree",
+    "categoryId": "5",
+    "subcategoryId": "132",
+    "price": 120.00,
+    "mrp": 150,
+    "discount": 20,
+    "stock": 80,
+    "description": "Soothing sheet mask with aloe vera extracts",
+    "expiryDate": "2025-09-30",
+    "image": ""
+  },
+  {
+    "id": "224",
+    "name": "Kapiva Ayurveda Amla Juice - 1 Litre",
+    "brand": "Kapiva",
+    "categoryId": "36",
+    "subcategoryId": "153",
+    "price": 299.00,
+    "mrp": 350,
+    "discount": 15,
+    "stock": 50,
+    "description": "Pure amla juice for immunity and vitality",
+    "expiryDate": "2024-12-31",
+    "image": ""
+  }
+]
+}

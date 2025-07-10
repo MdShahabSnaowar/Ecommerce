@@ -11,7 +11,7 @@ function filterValidCoins(history) {
 exports.getCoins = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(userId, "userId");
+    // console.log(userId, "userId");
     const userCoins = await SuperCoinSchema.findOne({ userId });
     if (!userCoins) {
       return res.json({ success: true, data: { coins: 0, history: [] } });

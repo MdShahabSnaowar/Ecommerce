@@ -1,0 +1,728 @@
+{
+    "groceryCategories": [
+        {
+            "id": "2",
+            "name": "Atta,Rice & Dal"
+        },
+        {
+            "id": "3",
+            "name": "Tea,Coffe & More"
+        },
+        {
+            "id": "6",
+            "name": "Oil,Masala,Ghee,Sugar,Salt & More"
+        },
+        {
+            "id": "8",
+            "name": "Cleaning Essentials"
+        },
+        {
+            "id": "9",
+            "name": "Snacks & Munchies"
+        },
+        {
+            "id": "10",
+            "name": "Bakery & Biscuits"
+        },
+        {
+            "id": "11",
+            "name": "Cold Drinks & Juices"
+        },
+        {
+            "id": "13",
+            "name": "Chicken,Eggs & Fish"
+        },
+        {
+            "id": "14",
+            "name": "Paan Corner"
+        },
+        {
+            "id": "15",
+            "name": "Spread & Sauces"
+        },
+        {
+            "id": "17",
+            "name": "Sweet Tooth"
+        },
+        {
+            "id": "18",
+            "name": "Frozen & Instant Foods"
+        },
+        {
+            "id": "19",
+            "name": "Organic & Healthy Living"
+        },
+        {
+            "id": "22",
+            "name": "Fragrances & Grooming"
+        },
+        {
+            "id": "23",
+            "name": "Home,Office & Pooja Needs"
+        }
+    ],
+    "grocerySubcategories": [
+        {
+            "id": "1",
+            "name": "Atta & Other Flours",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "2",
+            "name": "Besan,Suji,Maida & More",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "3",
+            "name": "Rice",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "4",
+            "name": "Toor,Urad & Chana Dal & More",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "5",
+            "name": "Poha,Daliya & Other Gains",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "6",
+            "name": "Rajma,Chana,Soya Chuck & Other",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "7",
+            "name": "Moong & Masoor",
+            "categoryId": "2",
+            "image": ""
+        },
+        {
+            "id": "9",
+            "name": "Tea,Green Tea,Herbal Drink & More",
+            "categoryId": "3",
+            "image": ""
+        },
+        {
+            "id": "10",
+            "name": "Coffee & Energy Drink",
+            "categoryId": "3",
+            "image": ""
+        },
+        {
+            "id": "17",
+            "name": "Oil",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "18",
+            "name": "Ghee & Vanaspati",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "19",
+            "name": "Powder & Whole Spices",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "21",
+            "name": "Sugar,Salt & Jaggery",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "23",
+            "name": "Dry Fruits,Dates & Seeds",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "24",
+            "name": "Papad & Fryums",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "25",
+            "name": "Detergent Powder",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "27",
+            "name": "Chips & Crips",
+            "categoryId": "9",
+            "image": ""
+        },
+        {
+            "id": "28",
+            "name": "Kitchen,Floor & Bathroom Cleaner",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "29",
+            "name": "Dishwashing Bars,Gel & Accessories",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "30",
+            "name": "Shoe Care",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "31",
+            "name": "Repellents",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "32",
+            "name": "Wafers,Rusks & Energy Bars",
+            "categoryId": "9",
+            "image": ""
+        },
+        {
+            "id": "33",
+            "name": "Namkeen & Bhujiya",
+            "categoryId": "9",
+            "image": ""
+        },
+        {
+            "id": "34",
+            "name": "Popcorn",
+            "categoryId": "9",
+            "image": ""
+        },
+        {
+            "id": "36",
+            "name": "Biscuits & Cookies",
+            "categoryId": "10",
+            "image": ""
+        },
+        {
+            "id": "37",
+            "name": "Glucose & Marine",
+            "categoryId": "10",
+            "image": ""
+        },
+        {
+            "id": "38",
+            "name": "Sweet & Salty Biscuits",
+            "categoryId": "10",
+            "image": ""
+        },
+        {
+            "id": "39",
+            "name": "Healthy & Digestive",
+            "categoryId": "10",
+            "image": ""
+        },
+        {
+            "id": "40",
+            "name": "Cakes & Rolls",
+            "categoryId": "10",
+            "image": ""
+        },
+        {
+            "id": "41",
+            "name": "Soft Drinks",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "42",
+            "name": "Soda,Mixers & Tonic Water",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "43",
+            "name": "Juices & Drinks",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "44",
+            "name": "Concentrates & Syrups",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "45",
+            "name": "Energy Drinks",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "46",
+            "name": "Lassi, Shakes & More",
+            "categoryId": "11",
+            "image": ""
+        },
+        {
+            "id": "47",
+            "name": "Chicken",
+            "categoryId": "13",
+            "image": ""
+        },
+        {
+            "id": "48",
+            "name": "Frozen Non-Veg Snacks",
+            "categoryId": "13",
+            "image": ""
+        },
+        {
+            "id": "49",
+            "name": "Eggs",
+            "categoryId": "13",
+            "image": ""
+        },
+        {
+            "id": "50",
+            "name": "Cigarettes",
+            "categoryId": "14",
+            "image": ""
+        },
+        {
+            "id": "51",
+            "name": "Mouth Fresheners",
+            "categoryId": "14",
+            "image": ""
+        },
+        {
+            "id": "52",
+            "name": "Tomato & Chilli Ketchup",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "53",
+            "name": "Asian Sauces",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "62",
+            "name": "Mayonnaise",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "63",
+            "name": "Chocolates",
+            "categoryId": "17",
+            "image": ""
+        },
+        {
+            "id": "64",
+            "name": "Syrup",
+            "categoryId": "17",
+            "image": ""
+        },
+        {
+            "id": "65",
+            "name": "Candies & Gum",
+            "categoryId": "17",
+            "image": ""
+        },
+        {
+            "id": "66",
+            "name": "Ice Cream & Frozen",
+            "categoryId": "17",
+            "image": ""
+        },
+        {
+            "id": "67",
+            "name": "Indian Sweets",
+            "categoryId": "17",
+            "image": ""
+        },
+        {
+            "id": "68",
+            "name": "Makhana & More",
+            "categoryId": "6",
+            "image": ""
+        },
+        {
+            "id": "69",
+            "name": "Frozen Veg Food",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "70",
+            "name": "Noodles",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "72",
+            "name": "Peanut Butter & Spreads & jam",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "73",
+            "name": "Pasta",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "74",
+            "name": "Dessert and Cake Mixes",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "75",
+            "name": "Pickles & Chutney",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "77",
+            "name": "Herbs & Seasoning",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "78",
+            "name": "Soup",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "79",
+            "name": "Instant Mix",
+            "categoryId": "18",
+            "image": ""
+        },
+        {
+            "id": "80",
+            "name": "Organic Tea",
+            "categoryId": "19",
+            "image": ""
+        },
+        {
+            "id": "82",
+            "name": "Organic Oil & Ghee",
+            "categoryId": "19",
+            "image": ""
+        },
+        {
+            "id": "83",
+            "name": "Organic Salt, Sugar & Honey",
+            "categoryId": "19",
+            "image": ""
+        },
+        {
+            "id": "84",
+            "name": "Organic Pulses & Millets",
+            "categoryId": "19",
+            "image": ""
+        },
+        {
+            "id": "85",
+            "name": "Organic Floor",
+            "categoryId": "19",
+            "image": ""
+        },
+        {
+            "id": "99",
+            "name": "Luxury Fragrances",
+            "categoryId": "22",
+            "image": ""
+        },
+        {
+            "id": "100",
+            "name": "Deos & Roll Ons",
+            "categoryId": "22",
+            "image": ""
+        },
+        {
+            "id": "101",
+            "name": "Shaving Needs",
+            "categoryId": "22",
+            "image": ""
+        },
+        {
+            "id": "102",
+            "name": "Pooja Need",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "103",
+            "name": "Tissues & Garbage Bags",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "104",
+            "name": "Cleaning & Kitchen Tools",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "105",
+            "name": "Dinning & Kitchen Needs",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "106",
+            "name": "Bathroom Essentials",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "107",
+            "name": "Stationery",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "108",
+            "name": "Fresheners",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "109",
+            "name": "Car Freshners",
+            "categoryId": "23",
+            "image": ""
+        },
+        {
+            "id": "119",
+            "name": "Honey",
+            "categoryId": "15",
+            "image": ""
+        },
+        {
+            "id": "163",
+            "name": "Liquid Detergent",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "164",
+            "name": "Detergent Bar/Soap",
+            "categoryId": "8",
+            "image": ""
+        },
+        {
+            "id": "165",
+            "name": "Fabric Conditioner & Whitener",
+            "categoryId": "8",
+            "image": ""
+        }
+    ],
+    "groceryProducts": [
+        {
+            "id": "1",
+            "name": "Premium Wheat Atta 5kg",
+            "price": 199,
+            "mrp": 249,
+            "brand": "Aashirvaad",
+            "stock": 100,
+            "image": "",
+            "description": "Premium quality wheat flour for chapatis and rotis",
+            "unit": "kg",
+            "subcategoryId": "1"
+        },
+        {
+            "id": "2",
+            "name": "Fine Suji 1kg",
+            "price": 45,
+            "mrp": 50,
+            "brand": "Tata",
+            "stock": 75,
+            "image": "",
+            "description": "Fine quality semolina for upma and halwa",
+            "unit": "kg",
+            "subcategoryId": "2"
+        },
+        {
+            "id": "3",
+            "name": "Basmati Rice 5kg",
+            "price": 399,
+            "mrp": 450,
+            "brand": "India Gate",
+            "stock": 50,
+            "image": "",
+            "description": "Premium basmati rice with long grains",
+            "unit": "kg",
+            "subcategoryId": "3"
+        },
+        {
+            "id": "4",
+            "name": "Toor Dal 1kg",
+            "price": 120,
+            "mrp": 135,
+            "brand": "Tata Sampann",
+            "stock": 80,
+            "image": "",
+            "description": "High protein toor dal",
+            "unit": "kg",
+            "subcategoryId": "4"
+        },
+        {
+            "id": "5",
+            "name": "Poha 500g",
+            "price": 35,
+            "mrp": 40,
+            "brand": "MTR",
+            "stock": 60,
+            "image": "",
+            "description": "Flattened rice for quick breakfast",
+            "unit": "g",
+            "subcategoryId": "5"
+        },
+        {
+            "id": "6",
+            "name": "Rajma 500g",
+            "price": 85,
+            "mrp": 95,
+            "brand": "Tata Sampann",
+            "stock": 45,
+            "image": "",
+            "description": "Red kidney beans rich in protein",
+            "unit": "g",
+            "subcategoryId": "6"
+        },
+        {
+            "id": "7",
+            "name": "Moong Dal 1kg",
+            "price": 110,
+            "mrp": 125,
+            "brand": "Fortune",
+            "stock": 70,
+            "image": "",
+            "description": "Split green gram dal",
+            "unit": "kg",
+            "subcategoryId": "7"
+        },
+        {
+            "id": "9",
+            "name": "Green Tea 25 Bags",
+            "price": 99,
+            "mrp": 120,
+            "brand": "Lipton",
+            "stock": 90,
+            "image": "",
+            "description": "Antioxidant rich green tea",
+            "unit": "pack",
+            "subcategoryId": "9"
+        },
+        {
+            "id": "10",
+            "name": "Instant Coffee 100g",
+            "price": 150,
+            "mrp": 175,
+            "brand": "Nescafe",
+            "stock": 65,
+            "image": "",
+            "description": "Classic instant coffee",
+            "unit": "g",
+            "subcategoryId": "10"
+        },
+        {
+            "id": "17",
+            "name": "Sunflower Oil 1L",
+            "price": 180,
+            "mrp": 200,
+            "brand": "Fortune",
+            "stock": 55,
+            "image": "",
+            "description": "Refined sunflower oil for cooking",
+            "unit": "litre",
+            "subcategoryId": "17"
+        },
+        {
+            "id": "18",
+            "name": "Pure Ghee 500ml",
+            "price": 350,
+            "mrp": 395,
+            "brand": "Amul",
+            "stock": 40,
+            "image": "",
+            "description": "Pure cow ghee",
+            "unit": "ml",
+            "subcategoryId": "18"
+        },
+        {
+            "id": "19",
+            "name": "Turmeric Powder 200g",
+            "price": 45,
+            "mrp": 55,
+            "brand": "Everest",
+            "stock": 85,
+            "image": "",
+            "description": "Pure turmeric powder",
+            "unit": "g",
+            "subcategoryId": "19"
+        },
+        {
+            "id": "21",
+            "name": "Sugar 1kg",
+            "price": 42,
+            "mrp": 45,
+            "brand": "Dhampur",
+            "stock": 95,
+            "image": "",
+            "description": "Pure cane sugar",
+            "unit": "kg",
+            "subcategoryId": "21"
+        },
+        {
+            "id": "23",
+            "name": "Almonds 200g",
+            "price": 250,
+            "mrp": 280,
+            "brand": "Wonderland",
+            "stock": 30,
+            "image": "",
+            "description": "Premium California almonds",
+            "unit": "g",
+            "subcategoryId": "23"
+        },
+        {
+            "id": "24",
+            "name": "Papad Assorted 200g",
+            "price": 65,
+            "mrp": 75,
+            "brand": "Lijjat",
+            "stock": 50,
+            "image": "",
+            "description": "Assorted papad pack",
+            "unit": "g",
+            "subcategoryId": "24"
+        },
+        {
+            "id": "25",
+            "name": "Detergent Powder 1kg",
+            "price": 110,
+            "mrp": 125,
+            "brand": "Surf Excel",
+            "stock": 60,
+            "image": "",
+            "description": "Matic front load detergent",
+            "unit": "kg",
+            "subcategoryId": "25"
+        }
+    ]
+}

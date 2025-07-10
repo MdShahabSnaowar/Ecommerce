@@ -96,7 +96,7 @@ router.post("/signup", async (req, res) => {
 router.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
-    console.log("Received OTP verification request:", req.body);
+    // console.log("Received OTP verification request:", req.body);
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
@@ -125,7 +125,7 @@ router.post("/verify-otp", async (req, res) => {
         .status(404)
         .json({ message: "User not found after OTP verification" });
     }
-    console.log("Updated User:", updatedUser);
+    // console.log("Updated User:", updatedUser);
     // ✅ Generate Access & Refresh Tokens
     const accessToken = jwt.sign(
       { user: { id: updatedUser._id, role: updatedUser.role } },
