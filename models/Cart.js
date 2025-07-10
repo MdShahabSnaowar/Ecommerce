@@ -68,6 +68,10 @@ const cartSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           required: true,
         },
+        productName: {
+          type: String, // ✅ Add this field
+          required: false,
+        },
         quantity: {
           type: Number,
           required: true,

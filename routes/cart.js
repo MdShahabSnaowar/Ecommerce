@@ -1,38 +1,50 @@
 const express = require("express");
 const router = express.Router();
-const { Cart, FruitsVegProduct, GroceryProduct, LabTest, Medicine, MilkProduct } = require("../models");
+const { Cart, FruitsVegProduct, GroceryProduct, LabTest, MedicineProduct, MilkProduct } = require("../models");
 const authUserOrAdmin = require("../middleware/authUserOrAdmin");
 const authMiddleware = require("../middleware/authMiddleware");
+// const MedicineProduct = require("../models/MedicineProduct");
+
+const typeMap = {
+  FruitsVegProduct: { key: "fruitsveg", enumValue: "FruitsVegProduct" },
+  GroceryProduct: { key: "grocery", enumValue: "GroceryProduct" },
+  LabTest: { key: "labtest", enumValue: "LabTest" },
+  Medicine: { key: "medicine", enumValue: "Medicine" },
+  MilkProduct: { key: "milk", enumValue: "MilkProduct" },
+};
 
 async function findProductByType(productId, type) {
   try {
-    const models = {
-      FruitsVegProduct,
-      GroceryProduct,
-      LabTest,
-      Medicine,
-      MilkProduct,
-    };
-
-    const model = models[type];
-    if (!model) {
-      console.log(`Invalid product type: ${type}`);
+    const typeInfo = typeMap[type];
+    if (!typeInfo) {
+      console.log(`❌ Invalid product type: ${type}`);
       return null;
     }
 
+    const models = {
+      fruitsveg: FruitsVegProduct,
+      grocery: GroceryProduct,
+      labtest: LabTest,
+      medicine: MedicineProduct,
+      milk: MilkProduct,
+    };
+
+    const model = models[typeInfo.key];
     const product = await model.findById(productId);
+
     if (product) {
-      // console.log(`Found product ${productId} in ${type}:`, product);
-      return { product, itemType: type };
+      return { product, itemType: typeInfo.enumValue }; // ✅ match enum
     }
 
-    // console.log(`Product ${productId} not found in ${type}`);
+    console.log(`❌ Product not found: ${productId} (type: ${type})`);
     return null;
   } catch (err) {
-    console.error("Error finding product by type:", err);
+    console.error("❌ Error finding product by type:", err);
     return null;
   }
 }
+
+
 
 // 🛒 Create a new empty cart
 router.post("/create", authMiddleware, async (req, res) => {
@@ -62,18 +74,17 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [], totalPrice: 0 });
-      // console.log("Created new cart for user:", userId);
     }
 
     for (const { productId, quantity, type } of items) {
       if (!productId || !quantity || quantity < 1 || !type) {
-        // console.log(`Skipping invalid item: productId=${productId}, quantity=${quantity}, type=${type}`);
+        console.log(`⚠️ Skipping invalid item: ${JSON.stringify({ productId, quantity, type })}`);
         continue;
       }
 
       const result = await findProductByType(productId, type);
       if (!result) {
-        // console.log(`Product not found: ${productId}`);
+        console.log(`⚠️ Product lookup failed: ${productId} (type: ${type})`);
         continue;
       }
 
@@ -90,25 +101,29 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
       if (existingIndex > -1) {
         cart.items[existingIndex].quantity += quantity;
         cart.items[existingIndex].priceAtAdd += priceAtAdd;
-        cart.items[existingIndex].productName = productName; // optional: update name if changed
+        cart.items[existingIndex].productName = productName;
       } else {
-        cart.items.push({ productId, productName, quantity, priceAtAdd, itemType });
+        cart.items.push({
+          productId,
+          productName,
+          quantity,
+          priceAtAdd,
+          itemType,
+        });
       }
     }
 
     cart.totalPrice = cart.items.reduce((total, item) => total + item.priceAtAdd, 0);
     cart.updatedAt = Date.now();
-
     await cart.save();
 
-    // format response to include productName explicitly
-    const formattedItems = cart.items.map(item => ({
+    const formattedItems = cart.items.map((item) => ({
       _id: item._id,
       productId: item.productId,
       productName: item.productName,
       quantity: item.quantity,
       priceAtAdd: item.priceAtAdd,
-      itemType: item.itemType
+      itemType: item.itemType,
     }));
 
     res.status(200).json({
@@ -120,11 +135,11 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
         totalPrice: cart.totalPrice,
         updatedAt: cart.updatedAt,
         createdAt: cart.createdAt,
-        __v: cart.__v
-      }
+        __v: cart.__v,
+      },
     });
   } catch (err) {
-    console.error("Cart Add Error:", err);
+    console.error("❌ Cart Add Error:", err);
     res.status(500).json({ message: "Error adding items", error: err.message });
   }
 });
