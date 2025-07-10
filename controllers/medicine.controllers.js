@@ -1,11 +1,14 @@
 // const Medicine = require("../models/MedicineProduct");
 const MedicineProduct = require("../models/MedicineProduct");
+
+const MedicineCategory = require("../models/MedicineCategory");
+const MedicineSubcategory = require("../models/MedicineSubcategory");
+
 // Create
 exports.createMedicine = async (req, res) => {
   try {
     const image = req.file ? `${req.file.filename}` : "";
-
-    const medicine = await Medicine.create({ ...req.body, image });
+    const medicine = await MedicineProduct.create({ ...req.body, image });
 
     res.status(201).json({ success: true, data: medicine });
   } catch (err) {
@@ -19,7 +22,7 @@ exports.createMedicine = async (req, res) => {
 // Read all
 exports.getAllMedicines = async (req, res) => {
   try {
-    const medicines = await Medicine.find().sort({ createdAt: -1 });
+    const medicines = await MedicineProduct.find().sort({ createdAt: -1 });
     res.json({ success: true, data: medicines });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -29,7 +32,7 @@ exports.getAllMedicines = async (req, res) => {
 // Read one
 exports.getMedicineById = async (req, res) => {
   try {
-    const medicine = await Medicine.findById(req.params.id);
+    const medicine = await MedicineProduct.findById(req.params.id);
     if (!medicine) {
       return res.status(404).json({ success: false, message: "Not found" });
     }
@@ -43,11 +46,10 @@ exports.getMedicineById = async (req, res) => {
 exports.updateMedicine = async (req, res) => {
   try {
     const image = req.file ? `${req.file.filename}` : undefined;
-
     const updateData = { ...req.body };
     if (image) updateData.image = image;
 
-    const medicine = await Medicine.findByIdAndUpdate(
+    const medicine = await MedicineProduct.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
@@ -66,7 +68,7 @@ exports.updateMedicine = async (req, res) => {
 // Delete
 exports.deleteMedicine = async (req, res) => {
   try {
-    const medicine = await Medicine.findByIdAndDelete(req.params.id);
+    const medicine = await MedicineProduct.findByIdAndDelete(req.params.id);
     if (!medicine) {
       return res.status(404).json({ success: false, message: "Not found" });
     }
@@ -102,6 +104,37 @@ exports.getProductsBySubcategory = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching products by subcategory:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+// ✅ GET /api/medicines/categories - All Categories
+exports.getAllMedicineCategories = async (req, res) => {
+  try {
+    const categories = await MedicineCategory.find().sort({ name: 1 });
+    res.status(200).json({ success: true, data: categories });
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ✅ GET /api/medicines/subcategories/:categoryId - Subcategories by Category
+exports.getSubcategoriesByCategoryId = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    const subcategories = await MedicineSubcategory.find({ categoryId }).sort({ name: 1 });
+
+    if (!subcategories.length) {
+      return res.status(404).json({ success: false, message: "No subcategories found" });
+    }
+
+    res.status(200).json({ success: true, data: subcategories });
+  } catch (err) {
+    console.error("Error fetching subcategories:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
