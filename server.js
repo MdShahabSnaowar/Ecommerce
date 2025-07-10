@@ -419,7 +419,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         ...paymentData,
         transactionId: `COD_${Date.now()}`,
         signature: "N/A",
-        status: "OrderPlaced",
+        status: "pending",
       };
 
       const payment = new Payment(paymentData);
