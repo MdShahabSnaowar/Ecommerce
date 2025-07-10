@@ -54,7 +54,7 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 // 🛒 Add item(s) to cart
-router.post("/add", authUserOrAdmin, async (req, res)=> {
+router.post("/add", authUserOrAdmin, async (req, res) => {
   try {
     const userId = req.user.id;
     const items = Array.isArray(req.body) ? req.body : [req.body];
@@ -79,6 +79,7 @@ router.post("/add", authUserOrAdmin, async (req, res)=> {
 
       const { product, itemType } = result;
       const priceAtAdd = product.price * quantity;
+      const productName = product.name;
 
       const existingIndex = cart.items.findIndex(
         (item) =>
@@ -89,8 +90,9 @@ router.post("/add", authUserOrAdmin, async (req, res)=> {
       if (existingIndex > -1) {
         cart.items[existingIndex].quantity += quantity;
         cart.items[existingIndex].priceAtAdd += priceAtAdd;
+        cart.items[existingIndex].productName = productName; // optional: update name if changed
       } else {
-        cart.items.push({ productId, quantity, priceAtAdd, itemType });
+        cart.items.push({ productId, productName, quantity, priceAtAdd, itemType });
       }
     }
 
@@ -99,9 +101,27 @@ router.post("/add", authUserOrAdmin, async (req, res)=> {
 
     await cart.save();
 
+    // format response to include productName explicitly
+    const formattedItems = cart.items.map(item => ({
+      _id: item._id,
+      productId: item.productId,
+      productName: item.productName,
+      quantity: item.quantity,
+      priceAtAdd: item.priceAtAdd,
+      itemType: item.itemType
+    }));
+
     res.status(200).json({
       message: "Items added to cart",
-      data: cart,
+      data: {
+        _id: cart._id,
+        userId: cart.userId,
+        items: formattedItems,
+        totalPrice: cart.totalPrice,
+        updatedAt: cart.updatedAt,
+        createdAt: cart.createdAt,
+        __v: cart.__v
+      }
     });
   } catch (err) {
     console.error("Cart Add Error:", err);
@@ -195,11 +215,34 @@ router.post("/remove", authMiddleware, async (req, res) => {
     }
 
     await cart.save();
-    res.status(200).json({ message: "Cart updated successfully", data: cart });
+
+    // Format response to include productName
+    const formattedItems = cart.items.map(item => ({
+      _id: item._id,
+      productId: item.productId,
+      productName: item.productName,
+      quantity: item.quantity,
+      priceAtAdd: item.priceAtAdd,
+      itemType: item.itemType
+    }));
+
+    res.status(200).json({
+      message: "Cart updated successfully",
+      data: {
+        _id: cart._id,
+        userId: cart.userId,
+        items: formattedItems,
+        totalPrice: cart.totalPrice,
+        updatedAt: cart.updatedAt,
+        createdAt: cart.createdAt,
+        __v: cart.__v
+      }
+    });
   } catch (err) {
     console.error("Error removing item:", err);
     res.status(500).json({ message: "Error removing item", error: err.message });
   }
 });
+
 
 module.exports = router;
