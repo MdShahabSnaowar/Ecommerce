@@ -216,7 +216,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
     const pricePerUnit = Number(item.priceAtAdd) / Number(item.quantity); // Calculate price per unit
 
     // Log initial state for debugging
-    console.log(`Initial: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
+    // console.log(`Initial: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
 
     // Handle quantity reduction or full removal
     if (decreaseAmount > 0) {
@@ -227,23 +227,23 @@ router.post("/remove", authMiddleware, async (req, res) => {
 
       // Deduct price based on the price per unit for the quantity being removed
       const deduction = decreaseAmount * pricePerUnit;
-      console.log(`Deducting: ${decreaseAmount} * ${pricePerUnit} = ${deduction}`);
+      // console.log(`Deducting: ${decreaseAmount} * ${pricePerUnit} = ${deduction}`);
       cart.totalPrice -= deduction;
       if (cart.totalPrice < 0) cart.totalPrice = 0;
 
       item.quantity -= decreaseAmount;
       item.priceAtAdd = item.quantity * pricePerUnit; // Update priceAtAdd to reflect new quantity
-      console.log(`After reduction: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
+      // console.log(`After reduction: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
 
       // Remove item if quantity becomes 0 or less
       if (item.quantity <= 0) {
-        console.log(`Removing item: quantity=${item.quantity}`);
+        // console.log(`Removing item: quantity=${item.quantity}`);
         cart.items.splice(itemIndex, 1);
       }
     } else {
       // Full item removal
       const deduction = Number(item.quantity) * pricePerUnit;
-      console.log(`Full removal: deducting ${item.quantity} * ${pricePerUnit} = ${deduction}`);
+      // console.log(`Full removal: deducting ${item.quantity} * ${pricePerUnit} = ${deduction}`);
       cart.totalPrice -= deduction;
       if (cart.totalPrice < 0) cart.totalPrice = 0;
       cart.items.splice(itemIndex, 1);
@@ -253,7 +253,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
 
     // Delete cart if empty
     if (cart.items.length === 0) {
-      console.log("Cart is empty, deleting cart");
+      // console.log("Cart is empty, deleting cart");
       await Cart.deleteOne({ _id: cart._id });
       return res.status(200).json({ message: "Item removed and empty cart deleted" });
     }
@@ -262,7 +262,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
     await cart.save();
 
     // Log final state
-    console.log(`Final: cart.totalPrice=${cart.totalPrice}, items.length=${cart.items.length}`);
+    // console.log(`Final: cart.totalPrice=${cart.totalPrice}, items.length=${cart.items.length}`);
 
     // Format response
     const formattedItems = cart.items.map(item => ({
