@@ -99,6 +99,7 @@ app.use("/api/lab-tests", require("./routes/labTest.routes"));
 app.use("/api/medicines", require("./routes/medicines"));
 app.use("/api/grocery/", require("./routes/groceryCategoryRoutes"));
 app.use("/api/filter/", require("./routes/filterfruitsVegRoutes"));
+app.use("/api/everything/", require("./routes/filtergroceryRoutes"));
 app.use(
   "/api/grocery/subcategories",
   require("./routes/grocerySubcategoryRoutes")
