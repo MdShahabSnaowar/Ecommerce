@@ -1,0 +1,720 @@
+const express = require("express");
+const router = express.Router();
+const mongoose = require("mongoose");
+const FilterGroceryCategory = require("../models/FilterGroceryCategory");
+const FilterGroceryProduct = require("../models/FilterGroceryProduct");
+const FilterPopularVeggies = require("../models/FilterPopularVeggies");
+const FilterPopularVeggiesProduct = require("../models/FilterPopularVeggiesProduct");
+const DairyCategory = require("../models/DairyCategory");
+const DairyProduct = require("../models/DairyProduct");
+const GroceryProduct = require("../models/GroceryProduct");
+const FruitsVegProduct = require("../models/FruitsVegProduct");
+const MilkProduct = require("../models/MilkProduct");
+const authAdmin = require("../middleware/authAdmin");
+
+// Helper function to validate ObjectId
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// FilterGroceryCategory CRUD
+router.post("/grocery-categories",authAdmin, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) {
+      return res.status(400).json({
+        message: "Name is required",
+        data: null,
+        error: true,
+      });
+    }
+    const category = new FilterGroceryCategory({ name, description });
+    await category.save();
+    res.status(201).json({
+      message: "Grocery category created successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/grocery-categories", async (req, res) => {
+  try {
+    const categories = await FilterGroceryCategory.find();
+    res.status(200).json({
+      message: "Grocery categories fetched successfully",
+      data: categories,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.put("/grocery-categories/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid grocery category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const { name, description } = req.body;
+    const category = await FilterGroceryCategory.findByIdAndUpdate(
+      id,
+      { name, description, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+    if (!category) {
+      return res.status(404).json({
+        message: "Grocery category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Grocery category updated successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+  
+});
+
+
+
+router.delete("/grocery-categories/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid grocery category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterGroceryCategory.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({
+        message: "Grocery category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Grocery category deleted successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+// FilterGroceryProduct CRUD
+router.post("/grocery-products",authAdmin, async (req, res) => {
+  try {
+    const { productIds, categoryId } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0 || !categoryId) {
+      return res.status(400).json({
+        message: "productIds (non-empty array) and categoryId are required",
+        data: null,
+        error: true,
+      });
+    }
+    if (!isValidObjectId(categoryId) || !productIds.every(id => isValidObjectId(id))) {
+      return res.status(400).json({
+        message: "Invalid product ID(s) or category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterGroceryCategory.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Grocery category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const products = await GroceryProduct.find({ _id: { $in: productIds } });
+    if (products.length !== productIds.length) {
+      const foundIds = products.map(p => p._id.toString());
+      const missingIds = productIds.filter(id => !foundIds.includes(id));
+      return res.status(404).json({
+        message: `Products not found for IDs: ${missingIds.join(", ")}`,
+        data: null,
+        error: true,
+      });
+    }
+    const existingMappings = await FilterGroceryProduct.find({
+      categoryId,
+      productId: { $in: productIds },
+    });
+    const existingProductIds = existingMappings.map(item => item.productId.toString());
+    const newProductIds = productIds.filter(id => !existingProductIds.includes(id));
+    if (newProductIds.length === 0) {
+      return res.status(200).json({
+        message: "All provided products are already mapped to this category",
+        data: [],
+        error: false,
+      });
+    }
+    const filterProducts = newProductIds.map(productId => ({
+      productId,
+      categoryId,
+    }));
+    const saved = await FilterGroceryProduct.insertMany(filterProducts, { ordered: false });
+    const responseData = {
+      added: saved.map(item => ({
+        productId: item.productId,
+        categoryId: item.categoryId,
+        _id: item._id,
+      })),
+      skipped: existingProductIds.map(id => ({ productId: id })),
+    };
+    res.status(201).json({
+      message: `Successfully added ${saved.length} new product(s) to category${existingProductIds.length > 0 ? `, ${existingProductIds.length} product(s) already mapped` : ""}`,
+      data: responseData,
+      error: false,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "One or more product-category mappings already exist",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/grocery-categories/products/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    if (!isValidObjectId(categoryId)) {
+      return res.status(400).json({
+        message: "Invalid category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterGroceryCategory.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Grocery category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const filterProducts = await FilterGroceryProduct.find({ categoryId }).populate({
+      path: "productId",
+      select: "name price mrp brand stock image description unit subcategoryId",
+    });
+    const products = filterProducts.map(fp => fp.productId);
+    res.status(200).json({
+      message: `Successfully fetched ${products.length} product(s) for category`,
+      data: products,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+// FilterPopularVeggies CRUD
+router.post("/popular-veggies",authAdmin, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) {
+      return res.status(400).json({
+        message: "Name is required",
+        data: null,
+        error: true,
+      });
+    }
+    const category = new FilterPopularVeggies({ name, description });
+    await category.save();
+    res.status(201).json({
+      message: "Popular veggies category created successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/popular-veggies", async (req, res) => {
+  try {
+    const categories = await FilterPopularVeggies.find();
+    res.status(200).json({
+      message: "Popular veggies categories fetched successfully",
+      data: categories,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.put("/popular-veggies/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid popular veggies category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const { name, description } = req.body;
+    const category = await FilterPopularVeggies.findByIdAndUpdate(
+      id,
+      { name, description, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+    if (!category) {
+      return res.status(404).json({
+        message: "Popular veggies category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Popular veggies category updated successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.delete("/popular-veggies/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid popular veggies category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterPopularVeggies.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({
+        message: "Popular veggies category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Popular veggies category deleted successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+// FilterPopularVeggiesProduct CRUD
+router.post("/popular-veggies-products",authAdmin, async (req, res) => {
+  try {
+    const { productIds, categoryId } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0 || !categoryId) {
+      return res.status(400).json({
+        message: "productIds (non-empty array) and categoryId are required",
+        data: null,
+        error: true,
+      });
+    }
+    if (!isValidObjectId(categoryId) || !productIds.every(id => isValidObjectId(id))) {
+      return res.status(400).json({
+        message: "Invalid product ID(s) or category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterPopularVeggies.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Popular veggies category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const products = await FruitsVegProduct.find({ _id: { $in: productIds } });
+    if (products.length !== productIds.length) {
+      const foundIds = products.map(p => p._id.toString());
+      const missingIds = productIds.filter(id => !foundIds.includes(id));
+      return res.status(404).json({
+        message: `Products not found for IDs: ${missingIds.join(", ")}`,
+        data: null,
+        error: true,
+      });
+    }
+    const existingMappings = await FilterPopularVeggiesProduct.find({
+      categoryId,
+      productId: { $in: productIds },
+    });
+    const existingProductIds = existingMappings.map(item => item.productId.toString());
+    const newProductIds = productIds.filter(id => !existingProductIds.includes(id));
+    if (newProductIds.length === 0) {
+      return res.status(200).json({
+        message: "All provided products are already mapped to this category",
+        data: [],
+        error: false,
+      });
+    }
+    const filterProducts = newProductIds.map(productId => ({
+      productId,
+      categoryId,
+    }));
+    const saved = await FilterPopularVeggiesProduct.insertMany(filterProducts, { ordered: false });
+    const responseData = {
+      added: saved.map(item => ({
+        productId: item.productId,
+        categoryId: item.categoryId,
+        _id: item._id,
+      })),
+      skipped: existingProductIds.map(id => ({ productId: id })),
+    };
+    res.status(201).json({
+      message: `Successfully added ${saved.length} new product(s) to category${existingProductIds.length > 0 ? `, ${existingProductIds.length} product(s) already mapped` : ""}`,
+      data: responseData,
+      error: false,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "One or more product-category mappings already exist",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/popular-veggies/products/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    if (!isValidObjectId(categoryId)) {
+      return res.status(400).json({
+        message: "Invalid category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await FilterPopularVeggies.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Popular veggies category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const filterProducts = await FilterPopularVeggiesProduct.find({ categoryId }).populate({
+      path: "productId",
+      select: "name images price mrp unit quantity isOrganic description origin availability",
+    });
+    const products = filterProducts.map(fp => fp.productId);
+    res.status(200).json({
+      message: `Successfully fetched ${products.length} product(s) for category`,
+      data: products,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+// DairyCategory CRUD
+router.post("/dairy-categories",authAdmin, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) {
+      return res.status(400).json({
+        message: "Name is required",
+        data: null,
+        error: true,
+      });
+    }
+    const category = new DairyCategory({ name, description });
+    await category.save();
+    res.status(201).json({
+      message: "Dairy category created successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/dairy-categories", async (req, res) => {
+  try {
+    const categories = await DairyCategory.find();
+    res.status(200).json({
+      message: "Dairy categories fetched successfully",
+      data: categories,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.put("/dairy-categories/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid dairy category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const { name, description } = req.body;
+    const category = await DairyCategory.findByIdAndUpdate(
+      id,
+      { name, description, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+    if (!category) {
+      return res.status(404).json({
+        message: "Dairy category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Dairy category updated successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.delete("/dairy-categories/:id",authAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        message: "Invalid dairy category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await DairyCategory.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({
+        message: "Dairy category not found",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(200).json({
+      message: "Dairy category deleted successfully",
+      data: category,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+// DairyProduct CRUD
+router.post("/dairy-products",authAdmin, async (req, res) => {
+  try {
+    const { productIds, categoryId } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0 || !categoryId) {
+      return res.status(400).json({
+        message: "productIds (non-empty array) and categoryId are required",
+        data: null,
+        error: true,
+      });
+    }
+    if (!isValidObjectId(categoryId) || !productIds.every(id => isValidObjectId(id))) {
+      return res.status(400).json({
+        message: "Invalid product ID(s) or category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await DairyCategory.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Dairy category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const products = await MilkProduct.find({ _id: { $in: productIds } });
+    if (products.length !== productIds.length) {
+      const foundIds = products.map(p => p._id.toString());
+      const missingIds = productIds.filter(id => !foundIds.includes(id));
+      return res.status(404).json({
+        message: `Products not found for IDs: ${missingIds.join(", ")}`,
+        data: null,
+        error: true,
+      });
+    }
+    const existingMappings = await DairyProduct.find({
+      categoryId,
+      productId: { $in: productIds },
+    });
+    const existingProductIds = existingMappings.map(item => item.productId.toString());
+    const newProductIds = productIds.filter(id => !existingProductIds.includes(id));
+    if (newProductIds.length === 0) {
+      return res.status(200).json({
+        message: "All provided products are already mapped to this category",
+        data: [],
+        error: false,
+      });
+    }
+    const filterProducts = newProductIds.map(productId => ({
+      productId,
+      categoryId,
+    }));
+    const saved = await DairyProduct.insertMany(filterProducts, { ordered: false });
+    const responseData = {
+      added: saved.map(item => ({
+        productId: item.productId,
+        categoryId: item.categoryId,
+        _id: item._id,
+      })),
+      skipped: existingProductIds.map(id => ({ productId: id })),
+    };
+    res.status(201).json({
+      message: `Successfully added ${saved.length} new product(s) to category${existingProductIds.length > 0 ? `, ${existingProductIds.length} product(s) already mapped` : ""}`,
+      data: responseData,
+      error: false,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "One or more product-category mappings already exist",
+        data: null,
+        error: true,
+      });
+    }
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+router.get("/dairy-categories/products/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    if (!isValidObjectId(categoryId)) {
+      return res.status(400).json({
+        message: "Invalid category ID",
+        data: null,
+        error: true,
+      });
+    }
+    const category = await DairyCategory.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({
+        message: "Dairy category not found",
+        data: null,
+        error: true,
+      });
+    }
+    const filterProducts = await DairyProduct.find({ categoryId }).populate({
+      path: "productId",
+      select: "name image quantity unit price mrp deliveryTime categoryId",
+    });
+    const products = filterProducts.map(fp => fp.productId);
+    res.status(200).json({
+      message: `Successfully fetched ${products.length} product(s) for category`,
+      data: products,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+module.exports = router;

@@ -188,6 +188,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
     const { productId, itemType, decreaseBy } = req.body;
     const userId = req.user.id;
 
+    // Validate input
     if (!productId || !itemType) {
       return res.status(400).json({ message: "productId and itemType are required" });
     }
@@ -197,11 +198,13 @@ router.post("/remove", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "decreaseBy must be a positive number" });
     }
 
+    // Find the cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
+    // Find the item in the cart
     const itemIndex = cart.items.findIndex(
       (item) => item.productId.toString() === productId && item.itemType === itemType
     );
@@ -210,48 +213,47 @@ router.post("/remove", authMiddleware, async (req, res) => {
     }
 
     const item = cart.items[itemIndex];
+    const pricePerUnit = Number(item.priceAtAdd) / Number(item.quantity); // Calculate price per unit
 
-    // Fetch the latest product to get the current price
-    const productData = await findProductByType(productId, itemType);
-    if (!productData) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    // Log initial state for debugging
+    console.log(`Initial: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
 
-    const currentPrice = Number(productData.product.price); // Adjust based on your product schema's price field
-    const previousPrice = Number(item.priceAtAdd);
-
-    // 🧠 Reduce quantity and update priceAtAdd
+    // Handle quantity reduction or full removal
     if (decreaseAmount > 0) {
-      // Deduct the price based on the previous priceAtAdd for the quantity being removed
-      const deduction = decreaseAmount * previousPrice;
-      cart.totalPrice -= deduction;
+      // Validate decreaseAmount does not exceed current quantity
+      if (decreaseAmount > item.quantity) {
+        return res.status(400).json({ message: `Cannot decrease by ${decreaseAmount}, only ${item.quantity} items in cart` });
+      }
 
+      // Deduct price based on the price per unit for the quantity being removed
+      const deduction = decreaseAmount * pricePerUnit;
+      console.log(`Deducting: ${decreaseAmount} * ${pricePerUnit} = ${deduction}`);
+      cart.totalPrice -= deduction;
       if (cart.totalPrice < 0) cart.totalPrice = 0;
 
       item.quantity -= decreaseAmount;
+      item.priceAtAdd = item.quantity * pricePerUnit; // Update priceAtAdd to reflect new quantity
+      console.log(`After reduction: quantity=${item.quantity}, priceAtAdd=${item.priceAtAdd}, cart.totalPrice=${cart.totalPrice}`);
 
-      // Update priceAtAdd to the current product price
-      item.priceAtAdd = currentPrice;
-
-      // Recalculate totalPrice for remaining items
-      if (item.quantity > 0) {
-        cart.totalPrice += item.quantity * currentPrice;
-      }
-
+      // Remove item if quantity becomes 0 or less
       if (item.quantity <= 0) {
+        console.log(`Removing item: quantity=${item.quantity}`);
         cart.items.splice(itemIndex, 1);
       }
     } else {
       // Full item removal
-      cart.totalPrice -= Number(item.quantity) * previousPrice;
+      const deduction = Number(item.quantity) * pricePerUnit;
+      console.log(`Full removal: deducting ${item.quantity} * ${pricePerUnit} = ${deduction}`);
+      cart.totalPrice -= deduction;
       if (cart.totalPrice < 0) cart.totalPrice = 0;
-
       cart.items.splice(itemIndex, 1);
     }
 
     cart.updatedAt = new Date();
 
+    // Delete cart if empty
     if (cart.items.length === 0) {
+      console.log("Cart is empty, deleting cart");
       await Cart.deleteOne({ _id: cart._id });
       return res.status(200).json({ message: "Item removed and empty cart deleted" });
     }
@@ -259,6 +261,10 @@ router.post("/remove", authMiddleware, async (req, res) => {
     cart.markModified("items");
     await cart.save();
 
+    // Log final state
+    console.log(`Final: cart.totalPrice=${cart.totalPrice}, items.length=${cart.items.length}`);
+
+    // Format response
     const formattedItems = cart.items.map(item => ({
       _id: item._id,
       productId: item.productId,
@@ -286,5 +292,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error removing item", error: err.message });
   }
 });
+
+
 
 module.exports = router;
