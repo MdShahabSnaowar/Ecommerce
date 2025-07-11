@@ -182,6 +182,7 @@ router.get("/", authMiddleware, async (req, res) => {
 });
 
 // 🗑️ Remove item from cart
+
 router.post("/remove", authMiddleware, async (req, res) => {
   try {
     const { productId, itemType, decreaseBy } = req.body;
@@ -189,6 +190,11 @@ router.post("/remove", authMiddleware, async (req, res) => {
 
     if (!productId || !itemType) {
       return res.status(400).json({ message: "productId and itemType are required" });
+    }
+
+    const decreaseAmount = Number(decreaseBy);
+    if (decreaseBy && (isNaN(decreaseAmount) || decreaseAmount <= 0)) {
+      return res.status(400).json({ message: "decreaseBy must be a positive number" });
     }
 
     const cart = await Cart.findOne({ userId });
@@ -199,39 +205,60 @@ router.post("/remove", authMiddleware, async (req, res) => {
     const itemIndex = cart.items.findIndex(
       (item) => item.productId.toString() === productId && item.itemType === itemType
     );
-
     if (itemIndex === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     }
 
-    // Handle quantity reduction
-    if (decreaseBy && decreaseBy > 0) {
-      cart.items[itemIndex].quantity -= decreaseBy;
+    const item = cart.items[itemIndex];
 
-      // If quantity becomes 0 or less, remove the item
-      if (cart.items[itemIndex].quantity <= 0) {
+    // Fetch the latest product to get the current price
+    const productData = await findProductByType(productId, itemType);
+    if (!productData) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const currentPrice = Number(productData.product.price); // Adjust based on your product schema's price field
+    const previousPrice = Number(item.priceAtAdd);
+
+    // 🧠 Reduce quantity and update priceAtAdd
+    if (decreaseAmount > 0) {
+      // Deduct the price based on the previous priceAtAdd for the quantity being removed
+      const deduction = decreaseAmount * previousPrice;
+      cart.totalPrice -= deduction;
+
+      if (cart.totalPrice < 0) cart.totalPrice = 0;
+
+      item.quantity -= decreaseAmount;
+
+      // Update priceAtAdd to the current product price
+      item.priceAtAdd = currentPrice;
+
+      // Recalculate totalPrice for remaining items
+      if (item.quantity > 0) {
+        cart.totalPrice += item.quantity * currentPrice;
+      }
+
+      if (item.quantity <= 0) {
         cart.items.splice(itemIndex, 1);
       }
     } else {
-      // Full item removal (existing behavior)
+      // Full item removal
+      cart.totalPrice -= Number(item.quantity) * previousPrice;
+      if (cart.totalPrice < 0) cart.totalPrice = 0;
+
       cart.items.splice(itemIndex, 1);
     }
 
-    // Recalculate total price
-    cart.totalPrice = cart.items.reduce(
-      (total, item) => total + item.quantity * item.priceAtAdd,
-      0
-    );
-    cart.updatedAt = Date.now();
+    cart.updatedAt = new Date();
 
     if (cart.items.length === 0) {
       await Cart.deleteOne({ _id: cart._id });
       return res.status(200).json({ message: "Item removed and empty cart deleted" });
     }
 
+    cart.markModified("items");
     await cart.save();
 
-    // Format response to include productName
     const formattedItems = cart.items.map(item => ({
       _id: item._id,
       productId: item.productId,
@@ -241,7 +268,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
       itemType: item.itemType
     }));
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Cart updated successfully",
       data: {
         _id: cart._id,
@@ -253,11 +280,11 @@ router.post("/remove", authMiddleware, async (req, res) => {
         __v: cart.__v
       }
     });
+
   } catch (err) {
     console.error("Error removing item:", err);
     res.status(500).json({ message: "Error removing item", error: err.message });
   }
 });
-
 
 module.exports = router;
