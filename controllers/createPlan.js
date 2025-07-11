@@ -1,6 +1,7 @@
 const planSchema = require("../models/planSchema");
 
 exports.createPlan = async (req, res) => {
+  
   try {
     const plan = await planSchema.create(req.body);
 
