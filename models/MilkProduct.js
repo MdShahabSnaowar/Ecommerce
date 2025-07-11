@@ -5,7 +5,7 @@ const milkProductSchema = new mongoose.Schema({
   image: { type: String, required: true },
   quantity: { type: Number, required: true },
   unit: {
-    type: String, // ✅ enum removed — now accepts anything
+    type: String, 
     default: "Litre",
   },
   price: { type: Number, required: true },
