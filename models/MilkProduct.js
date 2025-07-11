@@ -1,4 +1,3 @@
-// javascript
 const mongoose = require("mongoose");
 
 const milkProductSchema = new mongoose.Schema({
@@ -21,6 +20,8 @@ const milkProductSchema = new mongoose.Schema({
     ref: "MilkCategory",
     required: true,
   },
+}, {
+  timestamps: true // Adds createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model("MilkProduct", milkProductSchema);
