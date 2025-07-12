@@ -12,6 +12,12 @@ const User = require("./models/User");
 const SuperCoin = require("./models/SuperCoinSchema");
 const authMiddleware = require("./middleware/authMiddleware");
 const Cart = require("./models/Cart");
+const FruitsVegProduct = require("./models/FruitsVegProduct");
+const GroceryProduct = require("./models/GroceryProduct");
+const MedicineProduct = require("./models/MedicineProduct");
+const MilkProduct = require("./models/MilkProduct");
+const LabTest = require("./models/labtest");
+
 
 const crypto = require("crypto");
 
@@ -113,6 +119,37 @@ app.use("/api/milk", require("./routes/milkcategory"));
 app.use("/api/milk-products", require("./routes/milkProduct.routes"));
 app.use("/api/book-slot", require("./routes/appointment"));
 
+const getProductDetails = async (type, productId) => {
+  let productModel;
+
+  switch (type) {
+    case "FruitsVegProduct":
+      productModel = FruitsVegProduct;
+      break;
+    case "GroceryProduct":
+      productModel = GroceryProduct;
+      break;
+    case "Medicine":
+      productModel = MedicineProduct;
+      break;
+    case "MilkProduct":
+      productModel = MilkProduct;
+      break;
+    case "LabTest":
+      productModel = LabTest;
+      break;
+    default:
+      // console.log("🚫 Unknown product type:", type); // debug
+      return null;
+  }
+
+  const product = await productModel.findById(productId);
+  if (!product) {
+    // console.log(`⚠️ Product not found: ${type} - ${productId}`);
+  }
+
+  return product;
+};
 
 
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
@@ -190,12 +227,19 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         .json({ message: "Cart total must be greater than zero" });
     }
 
-    const formattedProducts = cart.items.map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      priceAtPurchase: item.priceAtAdd,
-    }));
-
+    const formattedProducts = await Promise.all(
+      cart.items.map(async (item) => {
+        const product = await getProductDetails(item.itemType, item.productId);
+        return {
+          productId: item.productId,
+          name: product?.name || "",
+          image: product?.image || "",
+          quantity: item.quantity,
+          priceAtPurchase: item.priceAtAdd,
+        };
+      })
+    );
+    
     const order = new OrderSchema({
       userId,
       products: formattedProducts,

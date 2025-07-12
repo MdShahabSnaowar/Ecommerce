@@ -8,19 +8,17 @@ const orderSchema = new Schema({
   },
   products: [
     {
-      productId: {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-      },
-      quantity: { type: Number, default: 1 },
-      priceAtPurchase: { type: Number, required: true }, // In case price changes later
-    },
+      productId: { type: mongoose.Schema.Types.ObjectId, required: true },
+      name: String,
+      image: String,
+      quantity: Number,
+      priceAtPurchase: Number,
+    }
   ],
   status: {
     type: String,
-    enum: ["OrderPlaced", "shipped", "outfor delivery", "delivered", "cancelled"], // ✅ Added OrderPlaced
-    default: "OrderPlaced", 
+    enum: ["OrderPlaced", "shipped", "outfor delivery", "delivered", "cancelled"],
+    default: "OrderPlaced",
   },
   totalAmount: {
     type: Number,
