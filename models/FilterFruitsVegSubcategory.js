@@ -15,6 +15,10 @@ const filterFruitsVegSubcategorySchema = new mongoose.Schema(
     description: {
       type: String,
     },
+    image: {
+      type: String, // Stores the filename or path
+      default: null,
+    },
   },
   { timestamps: true }
 );

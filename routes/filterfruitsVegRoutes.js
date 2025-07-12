@@ -5,6 +5,7 @@ const FilterFruitsVegCategory = require("../models/FilterFruitsVegCategory");
 const FilterFruitsVegSubcategory = require("../models/FilterFruitsVegSubcategory");
 const FilterFruitsVegProduct = require("../models/FilterFruitsVegProduct");
 const FruitsVegProduct = require("../models/FruitsVegProduct");
+const upload = require("../config/multer");
 const authAdmin = require("../middleware/authAdmin");
 // Helper function to validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -128,9 +129,10 @@ router.delete("/categories/:id", authAdmin,async (req, res) => {
 
 // Subcategory CRUD
 // Create Subcategory
-router.post("/subcategories",authAdmin, async (req, res) => {
+router.post("/subcategories", authAdmin, upload.single("image"), async (req, res) => {
   try {
     const { name, categoryId, description } = req.body;
+
     if (!name || !categoryId) {
       return res.status(400).json({
         message: "Name and categoryId are required",
@@ -138,6 +140,7 @@ router.post("/subcategories",authAdmin, async (req, res) => {
         error: true,
       });
     }
+
     if (!isValidObjectId(categoryId)) {
       return res.status(400).json({
         message: "Invalid category ID",
@@ -145,6 +148,7 @@ router.post("/subcategories",authAdmin, async (req, res) => {
         error: true,
       });
     }
+
     const category = await FilterFruitsVegCategory.findById(categoryId);
     if (!category) {
       return res.status(404).json({
@@ -153,8 +157,18 @@ router.post("/subcategories",authAdmin, async (req, res) => {
         error: true,
       });
     }
-    const subcategory = new FilterFruitsVegSubcategory({ name, categoryId, description });
+
+    const image = req.file ? req.file.filename : null;
+
+    const subcategory = new FilterFruitsVegSubcategory({
+      name,
+      categoryId,
+      description,
+      image,
+    });
+
     await subcategory.save();
+
     res.status(201).json({
       message: "Subcategory created successfully",
       data: subcategory,
@@ -169,10 +183,14 @@ router.post("/subcategories",authAdmin, async (req, res) => {
   }
 });
 
+
 // Get All Subcategories
 router.get("/subcategories", async (req, res) => {
   try {
-    const subcategories = await FilterFruitsVegSubcategory.find().populate("categoryId");
+    const subcategories = await FilterFruitsVegSubcategory.find()
+      .populate("categoryId") // this fetches full category document
+      .lean(); // optional but makes the result faster & fully visible as JS objects
+
     res.status(200).json({
       message: "Subcategories fetched successfully",
       data: subcategories,
@@ -186,6 +204,7 @@ router.get("/subcategories", async (req, res) => {
     });
   }
 });
+
 
 // Update Subcategory
 router.put("/subcategories/:id",authAdmin, async (req, res) => {
