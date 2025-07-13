@@ -484,6 +484,47 @@ router.get("/popular-veggies/products/:categoryId", async (req, res) => {
   }
 });
 
+
+
+router.get("/filter-popular-veggies-with-products", async (req, res) => {
+  try {
+    const categories = await FilterPopularVeggies.find();
+
+    const result = await Promise.all(
+      categories.map(async (cat) => {
+        const productsMapped = await FilterPopularVeggiesProduct.find({ categoryId: cat._id })
+          .populate({
+            path: "productId",
+            model: "FruitsVegProduct",
+          });
+
+        return {
+          _id: cat._id,
+          name: cat.name,
+          description: cat.description,
+          products: productsMapped.map((p) => p.productId), // populated product details
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Popular veggies categories with products fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (err) {
+    console.error("Error fetching popular veggies:", err);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching popular veggies",
+      error: true,
+    });
+  }
+});
+
+
+
 // DairyCategory CRUD
 router.post("/dairy-categories",authAdmin, async (req, res) => {
   try {
@@ -711,6 +752,43 @@ router.get("/dairy-categories/products/:categoryId", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
+
+
+router.get("/dairy-categories-product", async (req, res) => {
+  try {
+    const categories = await DairyCategory.find();
+
+    const result = await Promise.all(
+      categories.map(async (category) => {
+        const productMappings = await DairyProduct.find({ categoryId: category._id }).populate("productId");
+
+        const products = productMappings.map((mapping) => mapping.productId);
+
+        return {
+          _id: category._id,
+          name: category.name,
+          description: category.description,
+          products,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Dairy categories with products fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching dairy categories:", error.message);
+    res.status(500).json({
+      message: "Failed to fetch dairy categories",
       data: null,
       error: true,
     });
