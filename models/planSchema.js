@@ -20,7 +20,7 @@ const planSchema = new mongoose.Schema(
     },
     durationUnit: {
   type: String,
-  enum: ['weeks', 'months', 'years'],
+  enum: ['days','weeks', 'months', 'years'],
   required: true,
 },
     benefits: {

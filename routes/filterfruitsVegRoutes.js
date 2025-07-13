@@ -526,28 +526,39 @@ router.get("/subcategories/products/:subcategoryId", async (req, res) => {
     }
 
     // Fetch all filter products for the subcategory and populate product details
-    const filterProducts = await FilterFruitsVegProduct.find({ subcategoryId })
-      .populate({
-        path: "productId",
-        select: "name images price mrp unit quantity isOrganic description origin availability",
+  const filterProducts = await FilterFruitsVegProduct.find({ subcategoryId })
+    .populate({
+      path: "productId",
+      select:
+        "name images price mrp unit quantity isOrganic description origin availability subcategoryId",
+      populate: {
+        path: "subcategoryId",
+        model: "FruitsVegSubcategory", // This must match your model name
+        select: "name", // Add other fields you need
+      },
+    })
+    .populate({
+      path: "subcategoryId",
+      model: "FilterFruitsVegSubcategory", // This is the one directly on FilterFruitsVegProduct
+      select: "name", // Optional fields
+    });
+  
+      // Extract only the product details
+      const products = filterProducts.map(fp => fp.productId);
+  
+      res.status(200).json({
+        message: `Successfully fetched ${products.length} product(s) for subcategory`,
+        data: products,
+        error: false,
       });
-
-    // Extract only the product details
-    const products = filterProducts.map(fp => fp.productId);
-
-    res.status(200).json({
-      message: `Successfully fetched ${products.length} product(s) for subcategory`,
-      data: products,
-      error: false,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: `Server error: ${error.message}`,
-      data: null,
-      error: true,
-    });
-  }
-});
+    } catch (error) {
+      res.status(500).json({
+        message: `Server error: ${error.message}`,
+        data: null,
+        error: true,
+      });
+    }
+  });
 
 // Delete Filter Product
 router.delete("/delete-products/:id",authAdmin, async (req, res) => {
