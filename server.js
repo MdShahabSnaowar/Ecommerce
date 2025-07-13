@@ -19,7 +19,8 @@ const GroceryProduct = require("./models/GroceryProduct");
 const MedicineProduct = require("./models/MedicineProduct");
 const MilkProduct = require("./models/MilkProduct");
 const LabTest = require("./models/labtest");
-
+const Subscription = require("./models/subscriptionSchema");
+const sendEmail = require("./utils/sendEmail");
 
 const crypto = require("crypto");
 
@@ -27,25 +28,36 @@ dotenv.config();
 connectDB();
 
 const cron = require("node-cron");
-const Subscription = require("./models/subscriptionSchema");
+
 
 //  Run every day at midnight (00:00)
 cron.schedule("0 0 * * *", async () => {
   try {
     const now = new Date();
 
-    const expiredSubscriptions = await Subscription.updateMany(
-      {
-        endDate: { $lt: now },
-        status: "active",
-      },
-      {
-        $set: { status: "expired" },
+    // 🔍 Find all expiring subscriptions first
+    const expiringSubscriptions = await Subscription.find({
+      endDate: { $lt: now },
+      status: "active",
+    });
+
+    // 🔁 For each one, update status & notify user
+    for (const sub of expiringSubscriptions) {
+      sub.status = "expired";
+      await sub.save();
+
+      const user = await User.findById(sub.userId);
+      if (user && user.email) {
+        await sendEmail(
+          user.email,
+          "Subscription Expired",
+          `Dear ${user.name || "User"},\n\nYour subscription has expired. Please renew to continue enjoying benefits.\n\nThank you!`
+        );
       }
-    );
+    }
 
     console.log(
-      `✅ Subscription Expiry Job: ${expiredSubscriptions.modifiedCount} subscriptions marked as expired.`
+      `✅ Subscription Expiry Job: ${expiringSubscriptions.length} subscriptions marked as expired and notified.`
     );
   } catch (err) {
     console.error("❌ Subscription Expiry Job Failed:", err.message);
