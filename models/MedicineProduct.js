@@ -19,7 +19,11 @@ const medicineProductSchema = new mongoose.Schema(
     mrp: { type: Number, min: 0 },
     discount: { type: Number, default: 0 },
     stock: { type: Number, default: 0 },
-    description: { type: String },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 200000,
+    },
     expiryDate: { type: Date },
     image: { type: String, default: "" },
   },

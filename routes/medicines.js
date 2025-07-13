@@ -161,6 +161,50 @@ router.delete("/product/:id", async (req, res) => {
 });
 
 
+const MedicineCategory = require("../models/MedicineCategory");
+const MedicineSubcategory = require("../models/MedicineSubcategory");
+
+router.get("/categories-with-subcategories", async (req, res) => {
+  try {
+    // Step 1: Get all categories
+    const categories = await MedicineCategory.find();
+
+    // Step 2: For each category, fetch its subcategories
+    const result = await Promise.all(
+      categories.map(async (category) => {
+        const subcategories = await MedicineSubcategory.find({
+          categoryId: category._id,
+        });
+
+        return {
+          _id: category._id,
+          name: category.name,
+          description: category.description,
+          subcategories: subcategories.map((sub) => ({
+            _id: sub._id,
+            name: sub.name,
+            description: sub.description,
+          })),
+        };
+      })
+    );
+
+    return res.status(200).json({
+      message: "Medicine categories with subcategories fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching categories with subcategories:", err);
+    return res.status(500).json({
+      message: "Something went wrong while fetching data",
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
 
 
 

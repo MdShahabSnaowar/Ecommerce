@@ -417,7 +417,7 @@ app.post("/api/payment/verify", async (req, res) => {
 
 
 
-app.get("/get-profile", authMiddleware, async (req, res) => {
+app.get("/api/get-profile", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 

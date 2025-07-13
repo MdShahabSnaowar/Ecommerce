@@ -36,7 +36,7 @@ const groceryProductSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
-      maxlength: 500,
+      maxlength: 15000,
     },
     unit: {
       type: String,
