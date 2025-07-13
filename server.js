@@ -382,34 +382,7 @@ app.post("/api/payment/verify", async (req, res) => {
           }
         }
 
-        // 🪙 Reward coins
-        const totalAmount = cart.items.reduce((acc, item) => {
-          const price =
-            item.priceAtAdd || (item.productId && item.productId.price) || 0;
-          return acc + price * item.quantity;
-        }, 0);
-
-        const coinsToAdd = Math.floor(totalAmount / 150);
-
-        if (coinsToAdd > 0) {
-          const expiresAt = new Date();
-          expiresAt.setMonth(expiresAt.getMonth() + 6);
-
-          let superCoin = await SuperCoin.findOne({ userId });
-          if (!superCoin) {
-            superCoin = new SuperCoin({ userId, coins: 0, history: [] });
-          }
-
-          superCoin.coins += coinsToAdd;
-          superCoin.history.push({
-            type: "purchase",
-            coins: coinsToAdd,
-            description: `Earned ${coinsToAdd} coin(s) on purchase of ₹${totalAmount}`,
-            expiresAt,
-          });
-
-          await superCoin.save();
-        }
+        // ✅ SuperCoin reward logic removed
       }
 
       await Cart.deleteOne({ _id: cartId });
@@ -428,7 +401,6 @@ app.post("/api/payment/verify", async (req, res) => {
     res.status(500).json({ status: "Internal server error" });
   }
 });
-
 
 
 

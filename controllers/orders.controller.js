@@ -62,6 +62,33 @@ exports.updateOrderStatus = async (req, res) => {
     order.status = status;
     await order.save();
 
+    // ✅ Add SuperCoins if delivered
+    if (status === "delivered") {
+      const userId = order.userId;
+      const totalAmount = order.totalAmount;
+      const coinsToAdd = Math.floor(totalAmount / 150);
+
+      if (coinsToAdd > 0) {
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + 1); // 🕰️ 6 months expiry
+
+        let superCoin = await SuperCoin.findOne({ userId });
+        if (!superCoin) {
+          superCoin = new SuperCoin({ userId, coins: 0, history: [] });
+        }
+
+        superCoin.coins += coinsToAdd;
+        superCoin.history.push({
+          type: "purchase",
+          coins: coinsToAdd,
+          description: `Earned ${coinsToAdd} coin(s) on delivery of order ₹${totalAmount}`,
+          expiresAt,
+        });
+
+        await superCoin.save();
+      }
+    }
+
     res.json({ message: "Order status updated", order });
   } catch (err) {
     console.error("Update status error:", err);
