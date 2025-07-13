@@ -449,7 +449,8 @@ app.listen(PORT, () => {
 
 
 
-app.get("/api/milk-sales/monthly",authAdmin, async (req, res) => {
+
+app.get("/api/milk-sales/monthly", authAdmin, async (req, res) => {
   try {
     const milkSales = await Order.aggregate([
       { $unwind: "$products" },
@@ -458,11 +459,13 @@ app.get("/api/milk-sales/monthly",authAdmin, async (req, res) => {
         $group: {
           _id: {
             date: {
-              $dateToString: { format: "%d %B", date: "$createdAt" } // "04 March"
+              $dateToString: { format: "%d %B", date: "$createdAt" }, // e.g., 13 July
             },
-            product: "$products.name"
+            productId: "$products.productId",
+            productName: "$products.name",
           },
           totalSale: { $sum: "$products.priceAtPurchase" },
+          totalQuantity: { $sum: "$products.quantity" },
         },
       },
       {
@@ -471,18 +474,27 @@ app.get("/api/milk-sales/monthly",authAdmin, async (req, res) => {
         },
       },
     ]);
-    const formatted = milkSales.map((entry) => ({
-      date: entry._id.date,
-      product: entry._id.product,
-      productType: "MilkProduct", // ✅ added
-      totalSale: entry.totalSale,
-    }));
 
-    const totalMonthlySale = formatted.reduce((sum, curr) => sum + curr.totalSale, 0);
+    // 🔁 Populate full MilkProduct details
+    const enriched = await Promise.all(
+      milkSales.map(async (entry) => {
+        const productDetail = await MilkProduct.findById(entry._id.productId).lean();
+        return {
+          date: entry._id.date,
+          productName: entry._id.productName,
+          productType: "MilkProduct",
+          totalSale: entry.totalSale,
+          totalQuantity: entry.totalQuantity,
+          productDetails: productDetail || null,
+        };
+      })
+    );
+
+    const totalMonthlySale = enriched.reduce((sum, curr) => sum + curr.totalSale, 0);
 
     res.status(200).json({
-      message: formatted.length ? "Milk sales fetched successfully" : "No milk sales found",
-      records: formatted,
+      message: enriched.length ? "Milk sales fetched successfully" : "No milk sales found",
+      records: enriched,
       totalMonthlySale,
     });
   } catch (error) {
