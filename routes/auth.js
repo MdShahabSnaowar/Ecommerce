@@ -5,7 +5,8 @@ const User = require("../models/User");
 const { addCoins } = require("../controllers/supercoins.controllers");
 const Otp = require("../models/Otp"); // import the model
 const sendEmail = require("../utils/sendEmail");
-
+const Plan = require("../models/planSchema");
+const Subscription = require("../models/subscriptionSchema");
 
 
 router.post("/signup", async (req, res) => {
@@ -93,10 +94,11 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+
+
 router.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
-    // console.log("Received OTP verification request:", req.body);
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
@@ -125,19 +127,47 @@ router.post("/verify-otp", async (req, res) => {
         .status(404)
         .json({ message: "User not found after OTP verification" });
     }
-    // console.log("Updated User:", updatedUser);
+
     // ✅ Generate Access & Refresh Tokens
     const accessToken = jwt.sign(
       { user: { id: updatedUser._id, role: updatedUser.role } },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" } // ⏰ short-lived access token
+      { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
       { user: { id: updatedUser._id } },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" } // ⏳ longer-lived refresh token
+      { expiresIn: "7d" }
     );
+
+    // ✅ Create Basic Plan subscription after OTP verified
+    const basicPlan = await Plan.findOne({ name: "Basic Plan" });
+
+    if (basicPlan) {
+      const alreadySubscribed = await Subscription.findOne({
+        userId: updatedUser._id,
+      });
+
+      if (!alreadySubscribed) {
+        const startDate = new Date();
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + basicPlan.durationInDays);
+
+        const basicSubscription = new Subscription({
+          userId: updatedUser._id,
+          planId: basicPlan._id,
+          startDate,
+          endDate,
+          status: "active",
+        });
+
+        await basicSubscription.save();
+        console.log("✅ Basic Plan subscribed for user:", updatedUser.email);
+      }
+    } else {
+      console.warn("⚠️ Basic Plan not found in database");
+    }
 
     return res.status(200).json({
       message: "OTP verified successfully",
