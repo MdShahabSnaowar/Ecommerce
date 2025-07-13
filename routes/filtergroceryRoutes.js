@@ -10,6 +10,9 @@ const DairyProduct = require("../models/DairyProduct");
 const GroceryProduct = require("../models/GroceryProduct");
 const FruitsVegProduct = require("../models/FruitsVegProduct");
 const MilkProduct = require("../models/MilkProduct");
+const FilterMedicine = require("../models/FilterMedicine");
+const FilterMedicineProduct = require("../models/FilterMedicineProduct");
+const MedicineProduct = require("../models/MedicineProduct");
 const authAdmin = require("../middleware/authAdmin");
 
 // Helper function to validate ObjectId
@@ -250,6 +253,45 @@ router.get("/grocery-categories/products/:categoryId", async (req, res) => {
     });
   }
 });
+
+
+router.get("/filter-grocery-categories-with-products", async (req, res) => {
+  try {
+    const categories = await FilterGroceryCategory.find();
+
+    const result = await Promise.all(
+      categories.map(async (cat) => {
+        const productsMapped = await FilterGroceryProduct.find({ categoryId: cat._id })
+          .populate({
+            path: "productId",
+            model: "GroceryProduct",
+          });
+
+        return {
+          _id: cat._id,
+          name: cat.name,
+          description: cat.description,
+          products: productsMapped.map((p) => p.productId), // populated product details
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Filter grocery categories with products fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (err) {
+    console.error("Error fetching filter grocery categories:", err);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching filter grocery data",
+      error: true,
+    });
+  }
+});
+
 
 // FilterPopularVeggies CRUD
 router.post("/popular-veggies",authAdmin, async (req, res) => {
@@ -831,6 +873,141 @@ router.get("/filter-popular-veggies", async (req, res) => {
     });
   }
 });
+
+router.post("/filter-medicine/category", async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const exists = await FilterMedicine.findOne({ name });
+    if (exists) return res.status(409).json({ success: false, message: "Category already exists" });
+
+    const newCategory = await FilterMedicine.create({ name, description });
+    res.status(201).json({ success: true, message: "Category created", data: newCategory });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get All Categories with Products
+router.get("/filter-medicine/all", async (req, res) => {
+  try {
+    const categories = await FilterMedicine.find();
+    const result = [];
+
+    for (const cat of categories) {
+      const productsMap = await FilterMedicineProduct.find({ categoryId: cat._id }).populate("productId");
+      result.push({
+        _id: cat._id,
+        name: cat.name,
+        description: cat.description,
+        products: productsMap.map((p) => p.productId),
+      });
+    }
+
+    res.status(200).json({ success: true, message: "Categories with products fetched", data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Add Product to Category
+router.post("/filter-medicine/add-product", async (req, res) => {
+  try {
+    const { productId, categoryId } = req.body;
+    if (!productId || !categoryId) {
+      return res.status(400).json({ success: false, message: "ProductId and CategoryId are required" });
+    }
+
+    const exists = await FilterMedicineProduct.findOne({ productId, categoryId });
+    if (exists) return res.status(409).json({ success: false, message: "Mapping already exists" });
+
+    const mapping = await FilterMedicineProduct.create({ productId, categoryId });
+    res.status(201).json({ success: true, message: "Product mapped successfully", data: mapping });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Delete Product Mapping
+router.delete("/filter-medicine/delete-product", async (req, res) => {
+  try {
+    const { productId, categoryId } = req.body;
+    await FilterMedicineProduct.deleteOne({ productId, categoryId });
+    res.status(200).json({ success: true, message: "Product mapping deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Delete Category
+router.delete("/filter-medicine/category/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    await FilterMedicine.findByIdAndDelete(id);
+    await FilterMedicineProduct.deleteMany({ categoryId: id });
+    res.status(200).json({ success: true, message: "Category and related mappings deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+
+router.get("/filter-medicine-categories-products", async (req, res) => {
+  try {
+    const categories = await FilterMedicine.find();
+
+    const data = await Promise.all(
+      categories.map(async (category) => {
+        const mappings = await FilterMedicineProduct.find({
+          categoryId: category._id,
+        }).populate("productId");
+
+        const products = mappings
+          .map((m) => m.productId)
+          .filter((p) => p != null)
+          .map((p) => ({
+            _id: p._id,
+            name: p.name,
+            brand: p.brand,
+            price: p.price,
+            mrp: p.mrp,
+            discount: p.discount,
+            stock: p.stock,
+            image: p.image,
+            description: p.description,
+            unit: p.unit,
+            expiryDate: p.expiryDate,
+            subcategoryId: p.subcategoryId,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+            __v: p.__v,
+          }));
+
+        return {
+          _id: category._id,
+          name: category.name,
+          description: category.description,
+          products,
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Filter medicine categories with products fetched successfully",
+      data,
+      error: false,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch filter medicine categories and products",
+      error: true,
+      details: err.message,
+    });
+  }
+});
+
 
 
 module.exports = router;
