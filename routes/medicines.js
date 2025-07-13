@@ -11,7 +11,8 @@ const {
   getAllMedicineCategories,
   getSubcategoriesByCategoryId
 } = require("../controllers/medicine.controllers");
-
+const MedicineCategory = require("../models/MedicineCategory");
+const MedicineSubcategory = require("../models/MedicineSubcategory");
 const upload = require("../config/multer");
 const authAdmin = require("../middleware/authAdmin");
 
@@ -161,8 +162,7 @@ router.delete("/product/:id", async (req, res) => {
 });
 
 
-const MedicineCategory = require("../models/MedicineCategory");
-const MedicineSubcategory = require("../models/MedicineSubcategory");
+
 
 router.get("/categories-with-subcategories", async (req, res) => {
   try {
