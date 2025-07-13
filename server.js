@@ -10,6 +10,8 @@ const Payment = require("./models/paymentSchema");
 const OrderSchema = require("./models/OrderSchema");
 const User = require("./models/User");
 const SuperCoin = require("./models/SuperCoinSchema");
+const Order = require("./models/OrderSchema");
+const authAdmin = require("./middleware/authAdmin");
 const authMiddleware = require("./middleware/authMiddleware");
 const Cart = require("./models/Cart");
 const FruitsVegProduct = require("./models/FruitsVegProduct");
@@ -236,6 +238,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
           image: product?.image || "",
           quantity: item.quantity,
           priceAtPurchase: item.priceAtAdd,
+          productType: item.itemType,
         };
       })
     );
@@ -457,4 +460,49 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+
+
+
+app.get("/api/milk-sales/monthly",authAdmin, async (req, res) => {
+  try {
+    const milkSales = await Order.aggregate([
+      { $unwind: "$products" },
+      { $match: { "products.productType": "MilkProduct" } },
+      {
+        $group: {
+          _id: {
+            date: {
+              $dateToString: { format: "%d %B", date: "$createdAt" } // "04 March"
+            },
+            product: "$products.name"
+          },
+          totalSale: { $sum: "$products.priceAtPurchase" },
+        },
+      },
+      {
+        $sort: {
+          "_id.date": 1,
+        },
+      },
+    ]);
+    const formatted = milkSales.map((entry) => ({
+      date: entry._id.date,
+      product: entry._id.product,
+      productType: "MilkProduct", // ✅ added
+      totalSale: entry.totalSale,
+    }));
+
+    const totalMonthlySale = formatted.reduce((sum, curr) => sum + curr.totalSale, 0);
+
+    res.status(200).json({
+      message: formatted.length ? "Milk sales fetched successfully" : "No milk sales found",
+      records: formatted,
+      totalMonthlySale,
+    });
+  } catch (error) {
+    console.error("Error fetching milk sales:", error);
+    res.status(500).json({ message: "Failed to fetch milk sales", error: error.message });
+  }
 });

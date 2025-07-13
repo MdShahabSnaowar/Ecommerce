@@ -13,6 +13,7 @@ const orderSchema = new Schema({
       image: String,
       quantity: Number,
       priceAtPurchase: Number,
+      productType: String,
     }
   ],
   status: {
