@@ -717,4 +717,42 @@ router.get("/dairy-categories/products/:categoryId", async (req, res) => {
   }
 });
 
+
+router.get("/filter-popular-veggies", async (req, res) => {
+  try {
+    const categories = await FilterPopularVeggies.find();
+
+    const result = await Promise.all(
+      categories.map(async (category) => {
+        // Find all product mappings for this category
+        const mappings = await FilterPopularVeggiesProduct.find({ categoryId: category._id }).populate("productId");
+
+        // Extract product details from populated mappings
+        const products = mappings.map((mapping) => mapping.productId);
+
+        return {
+          _id: category._id,
+          name: category.name,
+          description: category.description,
+          products,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Filter Popular Veggies with products fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching filter popular veggies:", error.message);
+    res.status(500).json({
+      message: "Something went wrong while fetching filter popular veggies",
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
 module.exports = router;
