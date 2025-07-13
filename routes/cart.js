@@ -66,6 +66,88 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 // 🛒 Add item(s) to cart
+// router.post("/add", authUserOrAdmin, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const items = Array.isArray(req.body) ? req.body : [req.body];
+
+//     let cart = await Cart.findOne({ userId });
+//     if (!cart) {
+//       cart = new Cart({ userId, items: [], totalPrice: 0 });
+//     }
+
+//     for (const { productId, quantity, type } of items) {
+//       if (!productId || !quantity || quantity < 1 || !type) {
+//         console.log(`⚠️ Skipping invalid item: ${JSON.stringify({ productId, quantity, type })}`);
+//         continue;
+//       }
+
+//       const result = await findProductByType(productId, type);
+//       if (!result) {
+//         console.log(`⚠️ Product lookup failed: ${productId} (type: ${type})`);
+//         continue;
+//       }
+
+//       const { product, itemType } = result;
+//       const priceAtAdd = product.price * quantity;
+//       const productName = product.name;
+
+//       const existingIndex = cart.items.findIndex(
+//         (item) =>
+//           item.productId.toString() === productId.toString() &&
+//           item.itemType === itemType
+//       );
+
+//       if (existingIndex > -1) {
+//         cart.items[existingIndex].quantity += quantity;
+//         cart.items[existingIndex].priceAtAdd += priceAtAdd;
+//         cart.items[existingIndex].productName = productName;
+//       } else {
+//         cart.items.push({
+//           productId,
+//           productName,
+//           quantity,
+//           priceAtAdd,
+//           itemType,
+//         });
+//       }
+//     }
+
+//     cart.totalPrice = cart.items.reduce((total, item) => total + item.priceAtAdd, 0);
+//     cart.updatedAt = Date.now();
+//     await cart.save();
+
+//     const formattedItems = cart.items.map((item) => ({
+//       _id: item._id,
+//       productId: item.productId,
+//       productName: item.productName,
+//       quantity: item.quantity,
+//       priceAtAdd: item.priceAtAdd,
+//       itemType: item.itemType,
+//     }));
+
+//     res.status(200).json({
+//       message: "Items added to cart",
+//       data: {
+//         _id: cart._id,
+//         userId: cart.userId,
+//         items: formattedItems,
+//         totalPrice: cart.totalPrice,
+//         updatedAt: cart.updatedAt,
+//         createdAt: cart.createdAt,
+//         __v: cart.__v,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("❌ Cart Add Error:", err);
+//     res.status(500).json({ message: "Error adding items", error: err.message });
+//   }
+// });
+
+
+const Subscription = require("../models/subscriptionSchema");
+const Plan = require("../models/planSchema");
+
 router.post("/add", authUserOrAdmin, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -80,6 +162,32 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
       if (!productId || !quantity || quantity < 1 || !type) {
         console.log(`⚠️ Skipping invalid item: ${JSON.stringify({ productId, quantity, type })}`);
         continue;
+      }
+
+      // ✅ Check subscription for MilkProduct
+      if (type === "MilkProduct") {
+        const subscription = await Subscription.findOne({
+          userId,
+          status: "active",
+          endDate: { $gte: new Date() },
+        });
+
+        if (!subscription) {
+          return res.status(200).json({
+            message: "Milk product can't be added. No active subscription.",
+            error: true,
+            data: null,
+          });
+        }
+
+        const plan = await Plan.findById(subscription.planId);
+        if (!plan || !plan.benefits?.milkAccess) {
+          return res.status(200).json({
+            message: "Milk product can't be added. Your plan doesn't include milk access.",
+            error: true,
+            data: null,
+          });
+        }
       }
 
       const result = await findProductByType(productId, type);
@@ -128,6 +236,7 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
 
     res.status(200).json({
       message: "Items added to cart",
+      error: false,
       data: {
         _id: cart._id,
         userId: cart.userId,
@@ -140,9 +249,10 @@ router.post("/add", authUserOrAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Cart Add Error:", err);
-    res.status(500).json({ message: "Error adding items", error: err.message });
+    res.status(500).json({ message: "Error adding items", error: true });
   }
 });
+
 
 
 // 🛒 Get user cart
