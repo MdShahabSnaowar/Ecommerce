@@ -447,8 +447,75 @@ app.listen(PORT, () => {
 });
 
 
+const multer = require("multer");
+const upload = require("./config/multer"); // shared config
 
+// ✅ Wrap multer middleware with error handling manually
+app.put("/api/user/update", authMiddleware, (req, res, next) => {
+  upload.single("profilePhoto")(req, res, (err) => {
+    if (err) {
+      if (
+        err.message === "Only images or JSON files are allowed" ||
+        err instanceof multer.MulterError
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "File upload error",
+          error: err.message,
+        });
+      }
 
+      // Pass unexpected errors
+      return next(err);
+    }
+
+    // Proceed to main logic if no multer error
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      name,
+      mobile,
+      dateOfBirth,
+      gender,
+      nationality,
+    } = req.body;
+
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (mobile) updateFields.mobile = mobile;
+    if (dateOfBirth) updateFields.dateOfBirth = dateOfBirth;
+    if (gender) updateFields.gender = gender;
+    if (nationality) updateFields.nationality = nationality;
+
+    // ✅ Image file received
+    if (req.file) {
+      updateFields.profilePhoto = `/uploads/${req.file.filename}`;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    Object.assign(user, updateFields);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: user,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating user",
+      error: err.message,
+    });
+  }
+});
 
 app.get("/api/milk-sales/monthly", authAdmin, async (req, res) => {
   try {

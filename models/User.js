@@ -41,6 +41,26 @@ const userSchema = new mongoose.Schema({
     default: null,
   },
   addresses: [addressSchema],
+
+  // ✅ New optional fields
+  dateOfBirth: {
+    type: Date,
+    default: null,
+  },
+  gender: {
+    type: String,
+    enum: ["male", "female", "other"],
+    default: null,
+  },
+  profilePhoto: {
+    type: String, // You can use file path or cloud URL
+    default: null,
+  },
+  nationality: {
+    type: String,
+    default: null,
+  },
+
 }, {
   timestamps: true,
 });

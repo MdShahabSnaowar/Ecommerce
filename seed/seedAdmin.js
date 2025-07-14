@@ -5,25 +5,27 @@ dotenv.config(); // So we can use your .env variables like DB URL
 
 const seedAdmin = async () => {
   try {
+    console.log("⏳ Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI);
+    // console.log("✅ Connected to MongoDB");
 
-
-    const mobile = "9999999999";
-    const password = "admin123";
+    const mobile = "9039636904";
+    const password = "Vaibhav@123";
     const email = "admin@example.com";
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ mobile });
     if (existingAdmin) {
-    //   console.log("✅ Admin already exists:", existingAdmin._id.toString());
+      // console.log("ℹ️ Admin already exists:", existingAdmin._id.toString());
       return process.exit(0);
     }
 
     // Create new admin
     const admin = new User({
+      name: "Vaibhav", 
       mobile,
       email,
-      password, // Will be hashed by pre-save hook
+      password, // will be hashed by pre-save hook
       role: "admin",
       isOtpVerified: true,
     });
@@ -33,7 +35,7 @@ const seedAdmin = async () => {
 
     process.exit(0);
   } catch (err) {
-    // console.error("❌ Error seeding admin:", err);
+    console.error("❌ Error seeding admin:", err);
     process.exit(1);
   }
 };
