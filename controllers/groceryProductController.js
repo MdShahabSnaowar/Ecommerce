@@ -52,17 +52,33 @@ exports.getProductsBySubcategory = async (req, res) => {
     res.status(500).json({ message: "Error fetching products", error: err.message });
   }
 };
-
-
 exports.updateProduct = async (req, res) => {
   try {
     const updateData = { ...req.body };
-    if (req.file) updateData.image = `uploads/${req.file.filename}`;
 
-    const product = await GroceryProduct.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    res.status(200).json({ message: "Product updated", data: product });
+    if (req.files?.length) {
+      updateData.images = req.files.map((file) => `uploads/${file.filename}`);
+    }
+
+    const product = await GroceryProduct.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({
+      message: "Product updated",
+      data: product,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Error updating product", error: err.message });
+    res.status(500).json({
+      message: "Error updating product",
+      error: err.message,
+    });
   }
 };
 

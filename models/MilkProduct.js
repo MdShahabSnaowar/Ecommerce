@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const milkProductSchema = new mongoose.Schema({
   name: { type: String, required: true },
   image: { type: String, required: true },
+  images: [{ type: String }],
   quantity: { type: Number, required: true },
   unit: {
     type: String, 

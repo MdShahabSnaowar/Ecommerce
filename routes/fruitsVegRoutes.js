@@ -63,8 +63,8 @@ router.get(
 );
 router.get("/product/:id", product.getProductById);
 
-router.put("/product/:id",authAdmin, upload.array("images", 5), product.updateProduct);
-router.delete("/product/:id", authAdmin,product.deleteProduct);
+// router.put("/product/:id",authAdmin, upload.array("images", 5), product.updateProduct);
+// router.delete("/product/:id", authAdmin,product.deleteProduct);
 
 
 router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
@@ -483,12 +483,7 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
 
 
 
-router.put(
-  "/product/:id",
-  authAdmin,
-  upload.array("images", 5),
-  product.updateProduct
-);
+router.put("/product/:id",upload.array("images", 5),product.updateProduct);
 router.delete("/product/:id", authAdmin, product.deleteProduct);
 
 module.exports = router;

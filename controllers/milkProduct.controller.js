@@ -128,8 +128,17 @@ exports.updateMilkProduct = async (req, res) => {
       });
     }
 
-    const data = req.body;
-    if (req.file) data.image = req.file.filename;
+    const data = { ...req.body };
+
+    // ✅ For multiple images
+    if (req.files?.length) {
+      data.images = req.files.map((file) => `uploads/${file.filename}`);
+    }
+
+    // Optional: if a single 'image' is also sent (backward compatibility)
+    if (req.file) {
+      data.image = `uploads/${req.file.filename}`;
+    }
 
     const updated = await milkProduct.findByIdAndUpdate(req.params.id, data, {
       new: true,
@@ -150,7 +159,6 @@ exports.updateMilkProduct = async (req, res) => {
     });
   }
 };
-
 exports.deleteMilkProduct = async (req, res) => {
   try {
     const deleted = await milkProduct.findByIdAndDelete(req.params.id);

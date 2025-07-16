@@ -1,9 +1,19 @@
 const healthCheck = require("../models/healthCheck");
 
 // CREATE
+
 exports.createHealthCheck = async (req, res) => {
   try {
-    const newHealthCheck = await healthCheck.create(req.body);
+    const { title, createdByDoctorId } = req.body;
+
+    const newHealthCheck = new healthCheck({
+      title,
+      createdByDoctorId,
+      image: req.file ? `/uploads/${req.file.filename}` : undefined,
+    });
+
+    await newHealthCheck.save();
+
     res.status(201).json({ success: true, data: newHealthCheck });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

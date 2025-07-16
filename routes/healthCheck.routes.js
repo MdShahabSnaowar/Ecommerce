@@ -1,4 +1,5 @@
 const express = require("express");
+const upload = require("../config/multer");
 const {
   createHealthCheck,
   getAllHealthChecks,
@@ -9,7 +10,12 @@ const {
 
 const router = express.Router();
 
-router.post("/create", createHealthCheck);
+// router.post("/create", createHealthCheck);
+router.post(
+  "/create",
+  upload.single("image"), // 'image' should match the form-data key
+  createHealthCheck
+);
 router.get("/", getAllHealthChecks);
 router.get("/:id", getHealthCheckById);
 router.put("/:id", updateHealthCheck);

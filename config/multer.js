@@ -20,19 +20,42 @@ const storage = multer.diskStorage({
 });
 
 // Enhanced fileFilter to allow both images and JSON
+// const fileFilter = (req, file, cb) => {
+//   const ext = path.extname(file.originalname).toLowerCase();
+
+//   const imageTypes = [".jpeg", ".jpg", ".png", ".gif"];
+//   const isImage = imageTypes.includes(ext);
+
+//   const isJson =
+//     file.mimetype === "application/json" || ext === ".json";
+
+//   if (isImage || isJson) {
+//     cb(null, true);
+//   } else {
+//     cb(new Error("Only images or JSON files are allowed"), false);
+//   }
+// };
+
+
 const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
+  console.log("Incoming file:", {
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    extension: path.extname(file.originalname).toLowerCase()
+  });
 
-  const imageTypes = [".jpeg", ".jpg", ".png", ".gif"];
-  const isImage = imageTypes.includes(ext);
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp", // ✅ Add support for .webp
+  ];
 
-  const isJson =
-    file.mimetype === "application/json" || ext === ".json";
-
-  if (isImage || isJson) {
+  if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only images or JSON files are allowed"), false);
+    cb(new Error("Only image files are allowed"), false);
   }
 };
 

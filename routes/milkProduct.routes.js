@@ -12,11 +12,11 @@ const {
 } = require("../controllers/milkProduct.controller");
 
 // Routes
-router.post("/create", authAdmin,upload.single("image"), createMilkProduct);
+router.post("/create", authAdmin,upload.array("images", 5), createMilkProduct);
 router.get("/", getAllMilkProducts);
 router.get("/:id", getMilkProductById);
 router.get("/category/:categoryId", getByCategoryId);
-router.put("/:id", authAdmin,upload.single("image"), updateMilkProduct);
+router.put("/:id",authAdmin, upload.array("images", 5), updateMilkProduct);
 router.delete("/:id",authAdmin,deleteMilkProduct);
 
 module.exports = router;

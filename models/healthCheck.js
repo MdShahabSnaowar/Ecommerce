@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const healthCheckSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    icon: { type: String }, // URL or path to the icon/image
+    image: { type: String }, // image path (optional)
     createdByDoctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
-    }, // Optional if created by doctor
+    },
   },
   { timestamps: true }
 );

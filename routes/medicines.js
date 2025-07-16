@@ -140,16 +140,43 @@ router.get("/product", async (req, res) => {
 });
 
 // Update Product
-router.put("/product/:id", async (req, res) => {
-  try {
-    const product = await MedicineProduct.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
-    res.status(200).json({ success: true, message: "Product updated", data: product });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating product", error: error.message });
-  }
-});
 
+router.put(
+  "/product/:id",
+  upload.array("images", 5), // Accept up to 5 images under field name `images`
+  async (req, res) => {
+    try {
+      const updateData = { ...req.body };
+
+      if (req.files?.length) {
+        updateData.images = req.files.map((file) => `uploads/${file.filename}`);
+      }
+
+      const product = await MedicineProduct.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      if (!product)
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+
+      res.status(200).json({
+        success: true,
+        message: "Product updated",
+        data: product,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error updating product",
+        error: error.message,
+      });
+    }
+  }
+);
 // Delete Product
 router.delete("/product/:id", async (req, res) => {
   try {

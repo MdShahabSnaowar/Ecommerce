@@ -29,10 +29,12 @@ const groceryProductSchema = new mongoose.Schema(
       default: 0,
       min: [0, "Stock must be 0 or more"],
     },
-    image: {
-      type: String,
-      default: null,
-    },
+    images: [
+      {
+        type: String,
+        // required: true,
+      },
+    ],
     description: {
       type: String,
       trim: true,

@@ -26,6 +26,7 @@ const medicineProductSchema = new mongoose.Schema(
     },
     expiryDate: { type: Date },
     image: { type: String, default: "" },
+    images: [{ type: String }], // ✅ NEW: For multiple images
   },
   { timestamps: true }
 );
