@@ -6,9 +6,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Check if category with same name already exists
     const existingCategory = await GroceryCategory.findOne({ name });
-
     if (existingCategory) {
       return res.status(409).json({
         message: "Category already exists",
@@ -17,7 +15,9 @@ exports.createCategory = async (req, res) => {
       });
     }
 
-    const newCategory = await GroceryCategory.create({ name });
+    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    const newCategory = await GroceryCategory.create({ name, image });
 
     res.status(201).json({
       message: "Category created successfully",
@@ -30,7 +30,6 @@ exports.createCategory = async (req, res) => {
     });
   }
 };
-
 
 exports.getAllCategories = async (req, res) => {
   try {

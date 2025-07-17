@@ -3,8 +3,11 @@ const router = express.Router();
 const authUserOrAdmin = require("../middleware/authUserOrAdmin");
 const catCtrl = require("../controllers/groceryCategoryController");
 const authAdmin = require("../middleware/authAdmin");
+const upload = require("../config/multer");
 
-router.post("/categories", authAdmin, catCtrl.createCategory);
+// router.post("/categories", authAdmin, catCtrl.createCategory);
+router.post("/categories", authAdmin, upload.single("image"), catCtrl.createCategory);
+
 router.get("/categories", catCtrl.getAllCategories);
 router.get("/categories/:id", catCtrl.getCategoryById);
 router.put("/categories/:id", authAdmin, catCtrl.updateCategory);

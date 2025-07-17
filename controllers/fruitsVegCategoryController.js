@@ -7,15 +7,17 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, slug } = req.body;
 
-    const category = await FruitsVegCategory.create({ name, slug });
+    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    const category = await FruitsVegCategory.create({ name, slug, image });
 
     res.status(201).json({ message: "Category created", data: category });
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({
         message: "Category already exists with the same slug",
-        field: Object.keys(err.keyValue)[0], // like "slug"
-        value: err.keyValue.slug,            // like "vegitables"
+        field: Object.keys(err.keyValue)[0],
+        value: err.keyValue.slug,
       });
     }
 

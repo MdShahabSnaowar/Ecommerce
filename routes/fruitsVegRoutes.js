@@ -21,7 +21,10 @@ const fs = require("fs");
 const path = require("path");
 
 // 🥦 Category
-router.post("/categories", authAdmin, category.createCategory);
+// router.post("/categories", authAdmin, category.createCategory);
+
+router.post("/categories", authAdmin, upload.single("image"), category.createCategory);
+
 router.get("/categories", category.getAllCategories);
 router.get(
   "/categories/with-subcategories",

@@ -22,19 +22,25 @@ const authAdmin = require("../middleware/authAdmin");
 
 
 // Create Category
-router.post("/category", async (req, res) => {
+router.post("/category", upload.single("image"), async (req, res) => {
   try {
     const { name, description } = req.body;
+
     const existing = await MedicineCategory.findOne({ name });
     if (existing) {
       return res.status(400).json({ success: false, message: "Category already exists" });
     }
-    const category = await MedicineCategory.create({ name, description });
+
+    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    const category = await MedicineCategory.create({ name, description, image });
+
     res.status(201).json({ success: true, message: "Category created", data: category });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error creating category", error: error.message });
   }
 });
+
 
 // Get All Categories
 router.get("/category", async (req, res) => {
