@@ -13,6 +13,7 @@ const {
 } = require("../controllers/medicine.controllers");
 const MedicineCategory = require("../models/MedicineCategory");
 const MedicineSubcategory = require("../models/MedicineSubcategory");
+const MedicineProduct = require("../models/MedicineProduct");
 const upload = require("../config/multer");
 const authAdmin = require("../middleware/authAdmin");
 
@@ -246,37 +247,14 @@ router.delete("/subcategory/:id", async (req, res) => {
 //   }
 // });
 
-
+const medicineProductController = require('../controllers/medicine.controllers');
 router.post(
   "/product",
   upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "images", maxCount: 5 } // adjust as needed
+    { name: "image", maxCount: 1 },      // For main/featured image
+    { name: "images", maxCount: 5 }      // For multiple gallery images
   ]),
-  async (req, res) => {
-    try {
-      const { body, files } = req;
-      // Set image fields if uploaded, otherwise keep default
-      if (files.image && files.image.length) {
-        body.image = files.image[0].path; // or use a public URL if serving statically
-      }
-      if (files.images && files.images.length) {
-        body.images = files.images.map(file => file.path);
-      }
-      const product = await MedicineProduct.create(body);
-      res.status(201).json({
-        success: true,
-        message: "Product created",
-        data: product
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Error creating product",
-        error: error.message
-      });
-    }
-  }
+  medicineProductController.createMedicineProduct
 );
 
 // Get All Products
@@ -301,7 +279,7 @@ router.put(
       const updateData = { ...req.body };
 
       if (req.files?.length) {
-        updateData.images = req.files.map((file) => `uploads/${file.filename}`);
+        updateData.images = req.files.map((file) => `${file.filename}`);
       }
 
       const product = await MedicineProduct.findByIdAndUpdate(

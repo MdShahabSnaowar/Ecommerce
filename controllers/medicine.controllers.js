@@ -138,3 +138,57 @@ exports.getSubcategoriesByCategoryId = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+
+
+exports.createMedicineProduct = async (req, res) => {
+  try {
+    const {
+      name, brand, subcategoryId, price, mrp, discount, stock, description, expiryDate
+      // ...other fields as needed
+    } = req.body;
+
+    // 1. Find the subcategory to get its categoryId
+    const subcategory = await MedicineSubcategory.findById(subcategoryId);
+    if (!subcategory) {
+      return res.status(400).json({ success: false, message: 'Invalid subcategoryId' });
+    }
+
+    // 2. Use subcategory.categoryId for the product's categoryId
+    const categoryId = subcategory.categoryId;
+
+    // 3. Prepare product data (including images if using multer/multi-upload)
+    const images = req.files?.images?.map(f => '' + f.filename) || [];
+    const image = req.files?.image?.[0] ? '' + req.files.image[0].filename : "";
+
+    // 4. Create the product
+    const product = await MedicineProduct.create({
+      name,
+      brand,
+      categoryId,        // <-- set from subcategory
+      subcategoryId,
+      price,
+      mrp,
+      discount,
+      stock,
+      description,
+      expiryDate,
+      image,
+      images
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Medicine product created successfully",
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error creating medicine product",
+      error: error.message
+    });
+  }
+};
