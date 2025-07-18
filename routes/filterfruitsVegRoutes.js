@@ -205,6 +205,39 @@ router.get("/subcategories", async (req, res) => {
   }
 });
 
+router.get("/categories-with-subcategories", async (req, res) => {
+  try {
+    const categories = await FilterFruitsVegCategory.find();
+
+    const categoriesWithSubcategories = await Promise.all(
+      categories.map(async (category) => {
+        const subcategories = await FilterFruitsVegSubcategory.find({
+          categoryId: category._id,
+        });
+
+        return {
+          ...category._doc,
+          subcategories,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Categories with subcategories fetched successfully",
+      data: categoriesWithSubcategories,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error: " + error.message,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
+
 
 // Update Subcategory
 router.put("/subcategories/:id",authAdmin, async (req, res) => {

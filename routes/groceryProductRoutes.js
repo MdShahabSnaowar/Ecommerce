@@ -13,8 +13,8 @@ router.post("/create", upload.single("image"), productController.createProduct);
 //   next();
 // }, productController.createProduct);
 
-router.get("/get-all", productController.getAllProducts);
-// router.get("/get-by-id/:id", productController.getProductById);
+router.get("/", productController.getAllProducts);
+router.get("/get-by-id/:id", productController.getProductById);
 router.get("/:subcategoryId", productController.getProductsBySubcategory);
 
 
