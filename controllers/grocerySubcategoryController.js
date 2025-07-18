@@ -1,17 +1,16 @@
 
 const GrocerySubcategory = require("../models/GrocerySubCategory");
-
 exports.createSubcategory = async (req, res) => {
   try {
     const { name, categoryId } = req.body;
-    const image = req.file ? `${req.file.filename}` : undefined;
-
+    const image = req.file ? '' + req.file.filename : undefined;
     const subcategory = await GrocerySubcategory.create({ name, image, categoryId });
     res.status(201).json({ message: "Subcategory created", data: subcategory });
   } catch (err) {
     res.status(500).json({ message: "Error creating subcategory", error: err.message });
   }
 };
+
 
 exports.getAllSubcategories = async (req, res) => {
   try {

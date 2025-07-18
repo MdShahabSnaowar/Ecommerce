@@ -1,10 +1,13 @@
 
 const GroceryProduct = require("../models/GroceryProduct");
-
 exports.createProduct = async (req, res) => {
   try {
     const { name, price, brand, stock, description, unit, subcategoryId, mrp } = req.body;
-    const image = req.file ? `${req.file.filename}` : null;
+
+    // Process each file to get an array of image paths
+    const images = req.files
+      ? req.files.map(file => '' + file.filename)
+      : [];
 
     const product = await GroceryProduct.create({
       name,
@@ -14,8 +17,8 @@ exports.createProduct = async (req, res) => {
       description,
       unit,
       subcategoryId,
-      mrp, // 👈 Add mrp here
-      image,
+      mrp,
+      images, // assign the array here
     });
 
     res.status(201).json({ message: "Product created", data: product });

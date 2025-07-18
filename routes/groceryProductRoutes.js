@@ -4,7 +4,7 @@ const router = express.Router();
 const productController = require("../controllers/groceryProductController");
 const upload = require("../config/multer"); // ✅ correct multer path
 
-router.post("/create", upload.single("image"), productController.createProduct);
+router.post("/create", upload.array("images", 5), productController.createProduct);
 
 // router.post("/create", upload.single("image"), (req, res, next) => {
 //   console.log("POST /create called");

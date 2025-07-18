@@ -25,7 +25,7 @@ router.put(
     try {
       let updateData = req.body;
       if (req.file) {
-        updateData.image = req.file.path; // Store the relative path, or use a public URL
+        updateData.image = '' + req.file.filename; // SIRF relative path store karo!
       }
       const category = await GroceryCategory.findByIdAndUpdate(
         req.params.id,
@@ -38,6 +38,7 @@ router.put(
     }
   }
 );
+
 
 router.delete("/categories/:id", authAdmin, catCtrl.deleteCategory);
 

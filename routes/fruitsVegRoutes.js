@@ -500,7 +500,7 @@ router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
 
 
 
-router.put("/product/:id",upload.array("images", 5),product.updateProduct);
+router.put("/product/:id",authAdmin,upload.array("images", 5),product.updateProduct);
 router.delete("/product/:id", authAdmin, product.deleteProduct);
 
 module.exports = router;
