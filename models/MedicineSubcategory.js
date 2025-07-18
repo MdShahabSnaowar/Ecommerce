@@ -8,6 +8,7 @@ const medicineSubcategorySchema = new mongoose.Schema(
       ref: "MedicineCategory",
       required: true,
     },
+    image:{type: String},
     description: { type: String },
   },
   { timestamps: true }

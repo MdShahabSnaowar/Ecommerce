@@ -1,28 +1,36 @@
 const milkProduct = require("../models/MilkProduct");
 
-
 exports.createMilkProduct = async (req, res) => {
   try {
-    const { name, quantity, unit, price, categoryId, mrp } = req.body; // 👈 include mrp
-    const image = req.file ? req.file.filename : null;
+    const { name, quantity, unit, price, categoryId, mrp } = req.body;
+
+    // Gather all image filenames
+    const images = req.files && req.files.length
+      ? req.files.map(file => file.filename)
+      : [];
+
+    // Optionally, set the first image as 'image' (main display), or handle as per your app logic
+    const image = images.length > 0 ? images[0] : null;
 
     if (!name || !quantity || !unit || !price || !categoryId || !image) {
       return res.status(400).json({
         success: false,
-        message: "All fields including image are required",
+        message: "All fields including at least one image are required",
         data: null,
         error: null,
       });
     }
 
+    // Use the model key names
     const product = new milkProduct({
       name,
-      image,
+      image,      // first image as main image
+      images,     // all images for product
       quantity,
       unit,
       price,
       categoryId,
-      mrp, // 👈 pass mrp into product if provided
+      mrp,
     });
 
     await product.save();
@@ -132,7 +140,7 @@ exports.updateMilkProduct = async (req, res) => {
 
     // ✅ For multiple images
     if (req.files?.length) {
-      data.images = req.files.map((file) => `uploads/${file.filename}`);
+      data.images = req.files.map((file) => `${file.filename}`);
     }
 
     // Optional: if a single 'image' is also sent (backward compatibility)

@@ -124,16 +124,15 @@ router.get("/category", async (req, res) => {
 // });
 
 
-
 router.put(
   "/category/:id",
-  upload.single('image'), // 'image' should match the form-data field name
+  upload.single('image'),
   async (req, res) => {
     try {
       let updateData = req.body;
-      // If image is uploaded, add its path to updateData
       if (req.file) {
-        updateData.image = req.file.path;
+        // Store only the filename
+        updateData.image = req.file.filename;
       }
       const category = await MedicineCategory.findByIdAndUpdate(
         req.params.id,
@@ -148,6 +147,7 @@ router.put(
     }
   }
 );
+
 
 
 // Delete Category
@@ -171,7 +171,8 @@ router.post(
   async (req, res) => {
     try {
       const { name, categoryId, description } = req.body;
-      const image = req.file ? req.file.path : undefined;
+      // Use only filename or relative folder + filename
+      const image = req.file ? '' + req.file.filename : undefined;
       const subcategory = await MedicineSubcategory.create({ name, categoryId, description, image });
       res.status(201).json({ success: true, message: "Subcategory created", data: subcategory });
     } catch (error) {
@@ -179,6 +180,7 @@ router.post(
     }
   }
 );
+
 
 
 // Get All Subcategories
