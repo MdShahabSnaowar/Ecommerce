@@ -136,7 +136,7 @@ exports.updateProduct = async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.files?.length) {
-      updateData.images = req.files.map((file) => `uploads/${file.filename}`);
+      updateData.images = req.files.map((file) => `${file.filename}`);
     }
 
     const product = await FruitsVegProduct.findByIdAndUpdate(

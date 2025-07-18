@@ -47,9 +47,9 @@ exports.getCategoryById = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     let updateData = req.body;
-    // Agar image aayi hai toh uska path record karein
     if (req.file) {
-      updateData.image = req.file.path; // ya public URL bana sakte hain
+      // Only the relative path to serve via static route
+      updateData.image = "" + req.file.filename;
     }
     const category = await FruitsVegCategory.findByIdAndUpdate(
       req.params.id,
