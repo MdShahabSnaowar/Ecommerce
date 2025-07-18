@@ -200,11 +200,20 @@ router.put(
   async (req, res) => {
     try {
       let updateData = req.body;
+
       if (req.file) {
-        updateData.image = req.file.path;
+        // Only store the relative path for portability
+        updateData.image = '' + req.file.filename;
       }
-      const subcategory = await MedicineSubcategory.findByIdAndUpdate(req.params.id, updateData, { new: true });
-      if (!subcategory) return res.status(404).json({ success: false, message: "Subcategory not found" });
+
+      const subcategory = await MedicineSubcategory.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+      if (!subcategory)
+        return res.status(404).json({ success: false, message: "Subcategory not found" });
+
       res.status(200).json({ success: true, message: "Subcategory updated", data: subcategory });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error updating subcategory", error: error.message });
