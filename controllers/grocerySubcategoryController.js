@@ -4,7 +4,7 @@ const GrocerySubcategory = require("../models/GrocerySubCategory");
 exports.createSubcategory = async (req, res) => {
   try {
     const { name, categoryId } = req.body;
-    const image = req.file ? `uploads/${req.file.filename}` : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const subcategory = await GrocerySubcategory.create({ name, image, categoryId });
     res.status(201).json({ message: "Subcategory created", data: subcategory });
@@ -35,7 +35,7 @@ exports.getSubcategoryById = async (req, res) => {
 exports.updateSubcategory = async (req, res) => {
   try {
     const updateData = { ...req.body };
-    if (req.file) updateData.image = `uploads/${req.file.filename}`;
+    if (req.file) updateData.image = `${req.file.filename}`;
 
     const subcategory = await GrocerySubcategory.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.status(200).json({ message: "Subcategory updated", data: subcategory });
@@ -51,4 +51,26 @@ exports.deleteSubcategory = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Error deleting subcategory", error: err.message });
   }
+};
+
+
+
+exports.getSubcategoriesByCategoryId = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    const subcategories = await GrocerySubcategory.find({
+      categoryId,
+    }).populate("categoryId");
+
+    res.status(200).json({
+      message: "Grocery Subcategories fetched successfully",
+      data: subcategories,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching subcategories by categoryId",
+      error: err.message,
+    });
+  }
 };

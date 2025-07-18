@@ -31,8 +31,16 @@ router.get(
   category.getCategoriesWithSubcategories
 );
 
+
+ 
+
 router.get("/categories/:id", category.getCategoryById);
-router.put("/categories/:id", authAdmin, category.updateCategory);
+router.put(
+  "/categories/:id",
+  authAdmin,
+  upload.single('image'), // <-- yeh line add karein!
+  category.updateCategory
+);
 router.delete("/categories/:id", authAdmin, category.deleteCategory);
 
 // 🥕 Subcategory
@@ -51,6 +59,12 @@ router.put(
   subcategory.updateSubcategory
 );
 router.delete("/subcategories/:id", authAdmin, subcategory.deleteSubcategory);
+
+router.get(
+  "/subcategories/by-category/:categoryId",
+  subcategory.getSubcategoriesByCategoryId
+);
+
 
 // 🍎 Products
 router.post(

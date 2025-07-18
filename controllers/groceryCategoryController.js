@@ -15,7 +15,7 @@ exports.createCategory = async (req, res) => {
       });
     }
 
-    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const newCategory = await GroceryCategory.create({ name, image });
 
@@ -50,14 +50,14 @@ exports.getCategoryById = async (req, res) => {
   }
 };
 
-exports.updateCategory = async (req, res) => {
-  try {
-    const category = await GroceryCategory.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.status(200).json({ message: "Category updated", data: category });
-  } catch (err) {
-    res.status(500).json({ message: "Error updating category", error: err.message });
-  }
-};
+// exports.updateCategory = async (req, res) => {
+//   try {
+//     const category = await GroceryCategory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     res.status(200).json({ message: "Category updated", data: category });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error updating category", error: err.message });
+//   }
+// };
 
 exports.deleteCategory = async (req, res) => {
   try {

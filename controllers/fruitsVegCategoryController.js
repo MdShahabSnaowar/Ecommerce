@@ -46,9 +46,14 @@ exports.getCategoryById = async (req, res) => {
 
 exports.updateCategory = async (req, res) => {
   try {
+    let updateData = req.body;
+    // Agar image aayi hai toh uska path record karein
+    if (req.file) {
+      updateData.image = req.file.path; // ya public URL bana sakte hain
+    }
     const category = await FruitsVegCategory.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
     res.status(200).json({ message: "Updated successfully", data: category });
@@ -56,6 +61,7 @@ exports.updateCategory = async (req, res) => {
     res.status(500).json({ message: "Error updating category", error: err.message });
   }
 };
+
 
 exports.deleteCategory = async (req, res) => {
   try {

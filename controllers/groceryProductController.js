@@ -4,7 +4,7 @@ const GroceryProduct = require("../models/GroceryProduct");
 exports.createProduct = async (req, res) => {
   try {
     const { name, price, brand, stock, description, unit, subcategoryId, mrp } = req.body;
-    const image = req.file ? `uploads/${req.file.filename}` : null;
+    const image = req.file ? `${req.file.filename}` : null;
 
     const product = await GroceryProduct.create({
       name,
@@ -57,7 +57,7 @@ exports.updateProduct = async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.files?.length) {
-      updateData.images = req.files.map((file) => `uploads/${file.filename}`);
+      updateData.images = req.files.map((file) => `${file.filename}`);
     }
 
     const product = await GroceryProduct.findByIdAndUpdate(

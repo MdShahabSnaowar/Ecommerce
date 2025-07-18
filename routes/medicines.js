@@ -31,7 +31,7 @@ router.post("/category", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Category already exists" });
     }
 
-    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const category = await MedicineCategory.create({ name, description, image });
 
@@ -41,6 +41,26 @@ router.post("/category", upload.single("image"), async (req, res) => {
   }
 });
 
+
+router.get("/subcategory/by-category/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    const subcategories = await MedicineSubcategory.find({
+      categoryId,
+    }).populate("categoryId");
+
+    res.status(200).json({
+      message: "Medicine Subcategories fetched successfully",
+      data: subcategories,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching subcategories by categoryId",
+      error: err.message,
+    });
+  }
+});
 
 // Get All Categories
 router.get("/category", async (req, res) => {
@@ -53,15 +73,42 @@ router.get("/category", async (req, res) => {
 });
 
 // Update Category
-router.put("/category/:id", async (req, res) => {
-  try {
-    const category = await MedicineCategory.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!category) return res.status(404).json({ success: false, message: "Category not found" });
-    res.status(200).json({ success: true, message: "Category updated", data: category });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating category", error: error.message });
+// router.put("/category/:id", async (req, res) => {
+//   try {
+//     const category = await MedicineCategory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (!category) return res.status(404).json({ success: false, message: "Category not found" });
+//     res.status(200).json({ success: true, message: "Category updated", data: category });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Error updating category", error: error.message });
+//   }
+// });
+
+
+
+router.put(
+  "/category/:id",
+  upload.single('image'), // 'image' should match the form-data field name
+  async (req, res) => {
+    try {
+      let updateData = req.body;
+      // If image is uploaded, add its path to updateData
+      if (req.file) {
+        updateData.image = req.file.path;
+      }
+      const category = await MedicineCategory.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+      if (!category)
+        return res.status(404).json({ success: false, message: "Category not found" });
+      res.status(200).json({ success: true, message: "Category updated", data: category });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error updating category", error: error.message });
+    }
   }
-});
+);
+
 
 // Delete Category
 router.delete("/category/:id", async (req, res) => {
@@ -78,15 +125,21 @@ router.delete("/category/:id", async (req, res) => {
 // ------------------------ SUBCATEGORY CRUD ------------------------
 
 // Create Subcategory
-router.post("/subcategory", async (req, res) => {
-  try {
-    const { name, categoryId, description } = req.body;
-    const subcategory = await MedicineSubcategory.create({ name, categoryId, description });
-    res.status(201).json({ success: true, message: "Subcategory created", data: subcategory });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error creating subcategory", error: error.message });
+router.post(
+  "/subcategory",
+  upload.single('image'),
+  async (req, res) => {
+    try {
+      const { name, categoryId, description } = req.body;
+      const image = req.file ? req.file.path : undefined;
+      const subcategory = await MedicineSubcategory.create({ name, categoryId, description, image });
+      res.status(201).json({ success: true, message: "Subcategory created", data: subcategory });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error creating subcategory", error: error.message });
+    }
   }
-});
+);
+
 
 // Get All Subcategories
 router.get("/subcategory", async (req, res) => {
@@ -99,15 +152,24 @@ router.get("/subcategory", async (req, res) => {
 });
 
 // Update Subcategory
-router.put("/subcategory/:id", async (req, res) => {
-  try {
-    const subcategory = await MedicineSubcategory.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!subcategory) return res.status(404).json({ success: false, message: "Subcategory not found" });
-    res.status(200).json({ success: true, message: "Subcategory updated", data: subcategory });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating subcategory", error: error.message });
+router.put(
+  "/subcategory/:id",
+  upload.single('image'),
+  async (req, res) => {
+    try {
+      let updateData = req.body;
+      if (req.file) {
+        updateData.image = req.file.path;
+      }
+      const subcategory = await MedicineSubcategory.findByIdAndUpdate(req.params.id, updateData, { new: true });
+      if (!subcategory) return res.status(404).json({ success: false, message: "Subcategory not found" });
+      res.status(200).json({ success: true, message: "Subcategory updated", data: subcategory });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error updating subcategory", error: error.message });
+    }
   }
-});
+);
+
 
 // Delete Subcategory
 router.delete("/subcategory/:id", async (req, res) => {
@@ -124,14 +186,47 @@ router.delete("/subcategory/:id", async (req, res) => {
 // ------------------------ PRODUCT CRUD ------------------------
 
 // Create Product
-router.post("/product", async (req, res) => {
-  try {
-    const product = await MedicineProduct.create(req.body);
-    res.status(201).json({ success: true, message: "Product created", data: product });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error creating product", error: error.message });
+// router.post("/product", async (req, res) => {
+//   try {
+//     const product = await MedicineProduct.create(req.body);
+//     res.status(201).json({ success: true, message: "Product created", data: product });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Error creating product", error: error.message });
+//   }
+// });
+
+
+router.post(
+  "/product",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "images", maxCount: 5 } // adjust as needed
+  ]),
+  async (req, res) => {
+    try {
+      const { body, files } = req;
+      // Set image fields if uploaded, otherwise keep default
+      if (files.image && files.image.length) {
+        body.image = files.image[0].path; // or use a public URL if serving statically
+      }
+      if (files.images && files.images.length) {
+        body.images = files.images.map(file => file.path);
+      }
+      const product = await MedicineProduct.create(body);
+      res.status(201).json({
+        success: true,
+        message: "Product created",
+        data: product
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error creating product",
+        error: error.message
+      });
+    }
   }
-});
+);
 
 // Get All Products
 router.get("/product", async (req, res) => {

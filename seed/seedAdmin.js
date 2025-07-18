@@ -7,7 +7,7 @@ const seedAdmin = async () => {
   try {
     console.log("⏳ Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI);
-    // console.log("✅ Connected to MongoDB");
+    console.log("✅ Connected to MongoDB");
 
     const mobile = "9039636904";
     const password = "Vaibhav@123";
@@ -16,7 +16,7 @@ const seedAdmin = async () => {
     // Check if admin already exists
     const existingAdmin = await User.findOne({ mobile });
     if (existingAdmin) {
-      // console.log("ℹ️ Admin already exists:", existingAdmin._id.toString());
+      console.log("ℹ️ Admin already exists:", existingAdmin._id.toString());
       return process.exit(0);
     }
 
@@ -31,7 +31,7 @@ const seedAdmin = async () => {
     });
 
     await admin.save();
-    // console.log("✅ Admin created successfully:", admin._id.toString());
+    console.log("✅ Admin created successfully:", admin._id.toString());
 
     process.exit(0);
   } catch (err) {
