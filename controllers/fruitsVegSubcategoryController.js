@@ -5,7 +5,7 @@ exports.createSubcategory = async (req, res) => {
     const { name, categoryId } = req.body;
 
     // Only use filename to build relative path
-    const image = req.file ? `uploads/${req.file.filename}` : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const subcategory = await FruitsVegSubcategory.create({
       name,
@@ -60,22 +60,29 @@ exports.getSubcategoryById = async (req, res) => {
   }
 };
 
-
 exports.updateSubcategory = async (req, res) => {
   try {
     const updatedData = {
       name: req.body.name,
       categoryId: req.body.categoryId,
     };
-    if (req.file?.path) updatedData.image = req.file.path;
+    if (req.file) {
+      // ONLY save relative path, like: uploads/yourfilename.jpg
+      // req.file.path will be something like: "uploads/123456-image.jpg"
+      // To be extra safe, use req.file.filename (if multer is setup this way)
+      updatedData.image = '' + req.file.filename;
+    }
 
-    const subcategory = await FruitsVegSubcategory.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+    const subcategory = await FruitsVegSubcategory.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true }
+    );
     res.status(200).json({ message: "Subcategory updated", data: subcategory });
   } catch (err) {
     res.status(500).json({ message: "Error updating subcategory", error: err.message });
   }
 };
-
 exports.deleteSubcategory = async (req, res) => {
   try {
     await FruitsVegSubcategory.findByIdAndDelete(req.params.id);

@@ -7,7 +7,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, slug } = req.body;
 
-    const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const image = req.file ? `${req.file.filename}` : undefined;
 
     const category = await FruitsVegCategory.create({ name, slug, image });
 
