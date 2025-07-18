@@ -6,7 +6,7 @@ const upload = multer({ dest: "uploads/" });
 const subcatCtrl = require("../controllers/grocerySubcategoryController");
 
 router.post("/create", upload.single("image"), subcatCtrl.createSubcategory);
-router.get("/get-all", subcatCtrl.getAllSubcategories);
+router.get("/", subcatCtrl.getAllSubcategories);
 
 router.get(
   "/by-category/:categoryId",
