@@ -336,7 +336,7 @@ upload.fields([
   ]), // Accept up to 5 images under field name images yeh laga do zara
 
 
-router.post("/create", upload.single("image"), createMedicine);
+router.post("/create", authAdmin, upload.single("image"), createMedicine);
 router.get("/", getAllMedicines);
 
 
