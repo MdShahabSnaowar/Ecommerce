@@ -117,6 +117,7 @@ app.use("/api/doctors", require("./routes/doctor-profile"));
 app.use("/api/health-checks", require("./routes/healthCheck.routes"));
 app.use("/api/lab-tests", require("./routes/labTest.routes"));
 app.use("/api/medicines", require("./routes/medicines"));
+app.use("/api/medical", require("./routes/medical"));
 app.use("/api/grocery/", require("./routes/groceryCategoryRoutes"));
 app.use("/api/filter/", require("./routes/filterfruitsVegRoutes"));
 app.use("/api/everything/", require("./routes/filtergroceryRoutes"));
