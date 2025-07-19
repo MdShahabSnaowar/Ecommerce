@@ -330,10 +330,13 @@ router.delete("/product/:id", async (req, res) => {
 
 
 
+upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "images", maxCount: 10 },
+  ]), // Accept up to 5 images under field name images yeh laga do zara
 
 
-
-router.post("/create", authAdmin, upload.single("image"), createMedicine);
+router.post("/create", upload.single("image"), createMedicine);
 router.get("/", getAllMedicines);
 
 
