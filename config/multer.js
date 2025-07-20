@@ -35,13 +35,14 @@ const storage = multer.diskStorage({
 //     cb(new Error("Only images or JSON files are allowed"), false);
 //   }
 // };
-
-
 const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mimetype = file.mimetype;
+
   console.log("Incoming file:", {
     originalname: file.originalname,
-    mimetype: file.mimetype,
-    extension: path.extname(file.originalname).toLowerCase()
+    mimetype,
+    extension: ext,
   });
 
   const allowedMimeTypes = [
@@ -49,13 +50,21 @@ const fileFilter = (req, file, cb) => {
     "image/jpg",
     "image/png",
     "image/gif",
-    "image/webp", // ✅ Add support for .webp
+    "image/webp",
+    "application/json", // ✅ Allow JSON
   ];
 
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  const isAllowed = allowedMimeTypes.includes(mimetype) || ext === ".json";
+
+  if (isAllowed) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed"), false);
+    cb(
+      new Error(
+        `Rejected file: ${file.originalname}, mimetype: ${mimetype}, ext: ${ext}. Only images or JSON are allowed.`
+      ),
+      false
+    );
   }
 };
 

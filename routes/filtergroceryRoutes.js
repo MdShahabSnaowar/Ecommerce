@@ -217,6 +217,45 @@ router.post("/grocery-products",authAdmin, async (req, res) => {
   }
 });
 
+
+router.delete("/grocery-products/:productId", authAdmin, async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!isValidObjectId(productId)) {
+      return res.status(400).json({
+        message: "Invalid productId",
+        data: null,
+        error: true,
+      });
+    }
+
+    const deleted = await FilterGroceryProduct.findOneAndDelete({ productId });
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Product mapping not found",
+        data: null,
+        error: true,
+      });
+    }
+
+    res.status(200).json({
+      message: "Product mapping deleted successfully",
+      data: deleted,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
+
 router.get("/grocery-categories/products/:categoryId", async (req, res) => {
   try {
     const { categoryId } = req.params;
@@ -763,6 +802,44 @@ router.post("/dairy-products",authAdmin, async (req, res) => {
   }
 });
 
+
+router.delete("/dairy-products/:productId", authAdmin, async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!isValidObjectId(productId)) {
+      return res.status(400).json({
+        message: "Invalid productId",
+        data: null,
+        error: true,
+      });
+    }
+
+    const deleted = await DairyProduct.findOneAndDelete({ productId });
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Product mapping not found in dairy category",
+        data: null,
+        error: true,
+      });
+    }
+
+    res.status(200).json({
+      message: "Product mapping deleted successfully from dairy category",
+      data: deleted,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
 router.get("/dairy-categories/products/:categoryId", async (req, res) => {
   try {
     const { categoryId } = req.params;
@@ -913,19 +990,47 @@ router.get("/filter-medicine/all", async (req, res) => {
 router.post("/filter-medicine/add-product", async (req, res) => {
   try {
     const { productId, categoryId } = req.body;
-    if (!productId || !categoryId) {
-      return res.status(400).json({ success: false, message: "ProductId and CategoryId are required" });
+
+    if (!categoryId || !Array.isArray(productId) || productId.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "CategoryId and a non-empty productId array are required",
+      });
     }
 
-    const exists = await FilterMedicineProduct.findOne({ productId, categoryId });
-    if (exists) return res.status(409).json({ success: false, message: "Mapping already exists" });
+    const results = [];
+    const skipped = [];
 
-    const mapping = await FilterMedicineProduct.create({ productId, categoryId });
-    res.status(201).json({ success: true, message: "Product mapped successfully", data: mapping });
+    for (const id of productId) {
+      const exists = await FilterMedicineProduct.findOne({ productId: id, categoryId });
+      if (exists) {
+        skipped.push(id);
+        continue;
+      }
+
+      const mapping = await FilterMedicineProduct.create({ productId: id, categoryId });
+      results.push(mapping);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Mapping completed",
+      added: results.length,
+      skipped: skipped.length,
+      data: {
+        addedProducts: results,
+        skippedProducts: skipped,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error while mapping products",
+      error: error.message,
+    });
   }
 });
+
 
 // Delete Product Mapping
 router.delete("/filter-medicine/delete-product", async (req, res) => {

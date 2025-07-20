@@ -87,8 +87,8 @@ router.get("/product/:id", product.getProductById);
 router.post("/import-fruits-veg", upload.single("file"), async (req, res) => {
   try {
     const { type } = req.body;
-    // console.log("🔍 File:", req.file);
-    // console.log("🔍 Body Type:", req.body.type);
+    console.log("🔍 File:", req.file);
+    console.log("🔍 Body Type:", req.body.type);
 
     if (!req.file || !type) {
       return res.status(400).json({ success: false, message: "File and type are required" });
