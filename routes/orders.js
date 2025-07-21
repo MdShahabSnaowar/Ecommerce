@@ -1,5 +1,6 @@
 const express = require("express");
 const authAdmin = require("../middleware/authAdmin");
+const authUserOrAdmin = require("../middleware/authUserOrAdmin");
 const {
   getAllOrders,
   getMyOrders,
@@ -12,6 +13,6 @@ const router = express.Router();
 router.get("/", authAdmin, getAllOrders);
 router.get("/my", authMiddleware, getMyOrders);
 
-router.patch("/status/:orderId", authAdmin, updateOrderStatus);
+router.patch("/status/:orderId", authUserOrAdmin, updateOrderStatus);
 
 module.exports = router;

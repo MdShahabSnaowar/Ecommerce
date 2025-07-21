@@ -35,7 +35,6 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
-
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -47,9 +46,15 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const order = await OrderSchema.findById(orderId);
-
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
+    }
+
+    // 🛑 Role-based check for cancellation
+    if (req.user.role === "customer" && status === "cancelled") {
+      if (order.userId.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ error: "You can only cancel your own orders" });
+      }
     }
 
     // ⛔ Prevent status change if already delivered or cancelled
@@ -70,7 +75,7 @@ exports.updateOrderStatus = async (req, res) => {
 
       if (coinsToAdd > 0) {
         const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 1); // 🕰️ 6 months expiry
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
 
         let superCoin = await SuperCoin.findOne({ userId });
         if (!superCoin) {
