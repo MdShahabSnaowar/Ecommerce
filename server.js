@@ -570,3 +570,55 @@ app.get("/api/milk-sales/monthly", authAdmin, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch milk sales", error: error.message });
   }
 });
+
+
+app.get("/api/search-product/:name", async (req, res) => {
+  const nameToSearch = req.params.name;
+
+  try {
+    // Exact match query (case-insensitive)
+    const exactMatchQuery = { name: { $regex: new RegExp(`^${nameToSearch}$`, "i") } };
+    const partialMatchQuery = { name: { $regex: new RegExp(nameToSearch, "i") } };
+
+    // Perform both exact and partial search
+    const [exactFruits, exactGrocery, exactMedicine, exactMilk] = await Promise.all([
+      FruitsVegProduct.find(exactMatchQuery),
+      GroceryProduct.find(exactMatchQuery),
+      MedicineProduct.find(exactMatchQuery),
+      MilkProduct.find(exactMatchQuery),
+    ]);
+
+    const [partialFruits, partialGrocery, partialMedicine, partialMilk] = await Promise.all([
+      FruitsVegProduct.find(partialMatchQuery),
+      GroceryProduct.find(partialMatchQuery),
+      MedicineProduct.find(partialMatchQuery),
+      MilkProduct.find(partialMatchQuery),
+    ]);
+
+    const results = [];
+
+    const mergeResults = (exact, partial, source) => {
+      const uniquePartial = partial.filter(
+        (p) => !exact.some((e) => e._id.toString() === p._id.toString())
+      );
+      const combined = [...exact, ...uniquePartial];
+      if (combined.length > 0) {
+        results.push({ source, products: combined });
+      }
+    };
+
+    mergeResults(exactFruits, partialFruits, "FruitsVegProduct");
+    mergeResults(exactGrocery, partialGrocery, "GroceryProduct");
+    mergeResults(exactMedicine, partialMedicine, "MedicineProduct");
+    mergeResults(exactMilk, partialMilk, "MilkProduct");
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.json({ results });
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
