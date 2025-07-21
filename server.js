@@ -572,51 +572,57 @@ app.get("/api/milk-sales/monthly", authAdmin, async (req, res) => {
 });
 
 
-app.get("/api/search-product/:name", async (req, res) => {
-  const nameToSearch = req.params.name;
+app.get("/api/search-product/:itemType/:name", async (req, res) => {
+  const { itemType, name } = req.params;
+
+  const exactMatchQuery = { name: { $regex: new RegExp(`^${name}$`, "i") } };
+  const partialMatchQuery = { name: { $regex: new RegExp(name, "i") } };
 
   try {
-    // Exact match query (case-insensitive)
-    const exactMatchQuery = { name: { $regex: new RegExp(`^${nameToSearch}$`, "i") } };
-    const partialMatchQuery = { name: { $regex: new RegExp(nameToSearch, "i") } };
+    let exact = [];
+    let partial = [];
+    let source = "";
 
-    // Perform both exact and partial search
-    const [exactFruits, exactGrocery, exactMedicine, exactMilk] = await Promise.all([
-      FruitsVegProduct.find(exactMatchQuery),
-      GroceryProduct.find(exactMatchQuery),
-      MedicineProduct.find(exactMatchQuery),
-      MilkProduct.find(exactMatchQuery),
-    ]);
+    switch (itemType) {
+      case "Medicine":
+        partial = await MedicineProduct.find(partialMatchQuery);
+        source = "MedicineProduct";
+        break;
 
-    const [partialFruits, partialGrocery, partialMedicine, partialMilk] = await Promise.all([
-      FruitsVegProduct.find(partialMatchQuery),
-      GroceryProduct.find(partialMatchQuery),
-      MedicineProduct.find(partialMatchQuery),
-      MilkProduct.find(partialMatchQuery),
-    ]);
+      case "Grocery":
+        exact = await GroceryProduct.find(exactMatchQuery);
+        partial = await GroceryProduct.find(partialMatchQuery);
+        source = "GroceryProduct";
+        break;
 
-    const results = [];
+      case "Fruits&Vegetable":
+        exact = await FruitsVegProduct.find(exactMatchQuery);
+        partial = await FruitsVegProduct.find(partialMatchQuery);
+        source = "FruitsVegProduct";
+        break;
 
-    const mergeResults = (exact, partial, source) => {
-      const uniquePartial = partial.filter(
-        (p) => !exact.some((e) => e._id.toString() === p._id.toString())
-      );
-      const combined = [...exact, ...uniquePartial];
-      if (combined.length > 0) {
-        results.push({ source, products: combined });
-      }
-    };
+      case "Milk":
+        exact = await MilkProduct.find(exactMatchQuery);
+        partial = await MilkProduct.find(partialMatchQuery);
+        source = "MilkProduct";
+        break;
 
-    mergeResults(exactFruits, partialFruits, "FruitsVegProduct");
-    mergeResults(exactGrocery, partialGrocery, "GroceryProduct");
-    mergeResults(exactMedicine, partialMedicine, "MedicineProduct");
-    mergeResults(exactMilk, partialMilk, "MilkProduct");
-
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Product not found" });
+      default:
+        return res.status(400).json({ message: "Invalid item type" });
     }
 
-    return res.json({ results });
+    // Remove duplicates
+    const uniquePartial = partial.filter(
+      (p) => !exact.some((e) => e._id.toString() === p._id.toString())
+    );
+
+    const combined = [...exact, ...uniquePartial];
+
+  if (combined.length === 0) {
+    return res.status(200).json({ message: "No products found", source, products: [] });
+  }
+
+    return res.json({ source, products: combined });
   } catch (error) {
     console.error("Search Error:", error);
     return res.status(500).json({ message: "Server error", error: error.message });
