@@ -271,15 +271,62 @@ router.get("/product", async (req, res) => {
 
 // Update Product
 
+// router.put(
+//   "/product/:id",
+//   upload.array("images", 5), // Accept up to 5 images under field name `images`
+//   async (req, res) => {
+//     try {
+//       const updateData = { ...req.body };
+
+//       if (req.files?.length) {
+//         updateData.images = req.files.map((file) => `${file.filename}`);
+//       }
+
+//       const product = await MedicineProduct.findByIdAndUpdate(
+//         req.params.id,
+//         updateData,
+//         { new: true }
+//       );
+
+//       if (!product)
+//         return res
+//           .status(404)
+//           .json({ success: false, message: "Product not found" });
+
+//       res.status(200).json({
+//         success: true,
+//         message: "Product updated",
+//         data: product,
+//       });
+//     } catch (error) {
+//       res.status(500).json({
+//         success: false,
+//         message: "Error updating product",
+//         error: error.message,
+//       });
+//     }
+//   }
+// );
+
+
 router.put(
   "/product/:id",
-  upload.array("images", 5), // Accept up to 5 images under field name `images`
+  upload.fields([
+    { name: "image", maxCount: 1 }, // Single featured image
+    { name: "images", maxCount: 5 }, // Gallery images
+  ]),
   async (req, res) => {
     try {
       const updateData = { ...req.body };
 
-      if (req.files?.length) {
-        updateData.images = req.files.map((file) => `${file.filename}`);
+      // Handle main featured image
+      if (req.files?.image?.length > 0) {
+        updateData.image = req.files.image[0].filename;
+      }
+
+      // Handle gallery images
+      if (req.files?.images?.length > 0) {
+        updateData.images = req.files.images.map((file) => file.filename);
       }
 
       const product = await MedicineProduct.findByIdAndUpdate(
@@ -288,10 +335,11 @@ router.put(
         { new: true }
       );
 
-      if (!product)
+      if (!product) {
         return res
           .status(404)
           .json({ success: false, message: "Product not found" });
+      }
 
       res.status(200).json({
         success: true,
@@ -307,6 +355,8 @@ router.put(
     }
   }
 );
+
+
 
 router.get("/product/:id", async (req, res) => {
   try {
