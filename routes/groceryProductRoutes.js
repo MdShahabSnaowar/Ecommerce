@@ -18,7 +18,10 @@ router.get("/get-by-id/:id", productController.getProductById);
 router.get("/:subcategoryId", productController.getProductsBySubcategory);
 
 
-router.put("/:id",upload.array("images", 5), productController.updateProduct);
+router.put("/:id",  upload.fields([
+    { name: "image", maxCount: 1 }, // Single featured image
+    { name: "images", maxCount: 5 }, // Gallery images
+  ]), productController.updateProduct);
 router.delete("/delete/:id", productController.deleteProduct);
 
 module.exports = router;

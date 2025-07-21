@@ -49,18 +49,33 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductsBySubcategory = async (req, res) => {
   try {
-    const products = await GroceryProduct.find({ subcategoryId: req.params.subcategoryId });
-    res.status(200).json({ message: "Products fetched", data: products });
+    const products = await GroceryProduct.find({ subcategoryId: req.params.subcategoryId }).lean(); // Convert Mongoose docs to plain JS
+
+    // Ensure 'image' field exists in all products
+    const updatedProducts = products.map(product => ({
+      ...product,
+      image: product.image || "", // if image is undefined/null, set it to empty string
+    }));
+
+    res.status(200).json({ message: "Products fetched", data: updatedProducts });
   } catch (err) {
     res.status(500).json({ message: "Error fetching products", error: err.message });
   }
 };
+
+
 exports.updateProduct = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
-    if (req.files?.length) {
-      updateData.images = req.files.map((file) => `${file.filename}`);
+    // Handle single 'image' upload
+    if (req.files?.image && req.files.image.length > 0) {
+      updateData.image = req.files.image[0].filename;
+    }
+
+    // Handle multiple 'images' upload
+    if (req.files?.images && req.files.images.length > 0) {
+      updateData.images = req.files.images.map((file) => file.filename);
     }
 
     const product = await GroceryProduct.findByIdAndUpdate(
@@ -84,6 +99,7 @@ exports.updateProduct = async (req, res) => {
     });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   try {
