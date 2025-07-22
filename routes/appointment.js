@@ -1,26 +1,28 @@
 const express = require("express");
 const doctorSchema = require("../models/doctor.schema");
 const Appointment = require("../models/Appointment");
+const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 
 
 // POST /api/appointments
-router.post("/appointments", async (req, res) => {
+router.post("/appointments", authMiddleware, async (req, res) => {
   try {
-    const { userId, doctorId, date, slot, reason } = req.body;
+    const userId = req.user.user_id;  // Extracted from token
+    const { doctorId, date, slot, reason } = req.body;
 
     if (!userId || !doctorId || !date || !slot?.start || !slot?.end) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Optional: Check if doctor exists
+    // Check if doctor exists
     const doctor = await doctorSchema.findById(doctorId);
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    // Optional: Prevent double booking for same doctor, same slot
+    // Check if slot is already booked
     const isSlotTaken = await Appointment.findOne({
       doctorId,
       date,
