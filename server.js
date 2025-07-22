@@ -216,7 +216,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
 
     let amount = cart.totalPrice;
     if (expressDelivery === true) {
-      amount += 20;
+      amount += 25;
     }
 
     let superCoinDiscount = 0;

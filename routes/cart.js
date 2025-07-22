@@ -365,7 +365,7 @@ router.post("/remove", authMiddleware, async (req, res) => {
     if (cart.items.length === 0) {
       // console.log("Cart is empty, deleting cart");
       await Cart.deleteOne({ _id: cart._id });
-      return res.status(200).json({ message: "Item removed and empty cart deleted" });
+      return res.status(200).json({ message: "Item removed and empty cart deleted","data":[] });
     }
 
     cart.markModified("items");
