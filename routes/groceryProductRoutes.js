@@ -22,6 +22,6 @@ router.put("/:id",  upload.fields([
     { name: "image", maxCount: 1 }, // Single featured image
     { name: "images", maxCount: 5 }, // Gallery images
   ]), productController.updateProduct);
-router.delete("/delete/:id", productController.deleteProduct);
+router.delete("/:id", productController.deleteProduct);
 
 module.exports = router;

@@ -31,6 +31,7 @@ exports.createProduct = async (req, res) => {
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await GroceryProduct.find().populate("subcategoryId");
+    console.log(products)
     res.status(200).json({ message: "Products fetched", data: products });
   } catch (err) {
     res.status(500).json({ message: "Error fetching products", error: err.message });
