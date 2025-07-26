@@ -1,4 +1,5 @@
 const OrderSchema = require("../models/OrderSchema");
+const SuperCoinSchema = require("../models/SuperCoinSchema");
 
 // @desc    Get all orders (admin or user)
 exports.getAllOrders = async (req, res) => {
@@ -77,9 +78,9 @@ exports.updateOrderStatus = async (req, res) => {
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + 1);
 
-        let superCoin = await SuperCoin.findOne({ userId });
+        let superCoin = await SuperCoinSchema.findOne({ userId });
         if (!superCoin) {
-          superCoin = new SuperCoin({ userId, coins: 0, history: [] });
+          superCoin = new SuperCoinSchema({ userId, coins: 0, history: [] });
         }
 
         superCoin.coins += coinsToAdd;

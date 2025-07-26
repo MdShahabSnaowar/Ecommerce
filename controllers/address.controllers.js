@@ -111,6 +111,7 @@ exports.updateAddress = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to update address" });
   }
 };
+
 exports.deleteAddress = async (req, res) => {
   try {
     const addressId = req.params.id;
@@ -128,7 +129,8 @@ exports.deleteAddress = async (req, res) => {
     const wasDefault = address.isDefault;
 
     // Remove the address using Mongoose subdocument .remove()
-    address.remove();
+    user.addresses.id(addressId).deleteOne();
+
 
     // If the deleted one was default, set first one as default
     if (wasDefault && user.addresses.length > 0) {
