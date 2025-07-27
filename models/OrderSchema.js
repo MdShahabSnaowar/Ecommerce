@@ -18,8 +18,24 @@ const orderSchema = new Schema({
   ],
   status: {
     type: String,
-    enum: ["OrderPlaced", "shipped", "outfor delivery", "delivered", "cancelled"],
+    enum: [
+      "OrderPlaced",
+      "shipped",
+      "outfor delivery",
+      "delivered",
+      "cancelled",
+      "exchange_requested",
+      "exchange_in_transit",
+      "exchanged",
+      "return_requested",
+      "returned"
+    ],
     default: "OrderPlaced",
+  },
+
+  deliveredAt: {
+    type: Date,
+    default: null
   },
   totalAmount: {
     type: Number,

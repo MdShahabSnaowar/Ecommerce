@@ -36,12 +36,90 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
+// exports.updateOrderStatus = async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+//     const { status } = req.body;
+
+//     const allowedStatuses = ["shipped", "outfor delivery", "delivered", "cancelled"];
+//     if (!allowedStatuses.includes(status)) {
+//       return res.status(400).json({ error: "Invalid status provided" });
+//     }
+
+//     const order = await OrderSchema.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({ error: "Order not found" });
+//     }
+
+//     // 🛑 Role-based check for cancellation
+//     if (req.user.role === "customer" && status === "cancelled") {
+//       if (order.userId.toString() !== req.user._id.toString()) {
+//         return res.status(403).json({ error: "You can only cancel your own orders" });
+//       }
+//     }
+
+//     // ⛔ Prevent status change if already delivered or cancelled
+//     if (["delivered", "cancelled"].includes(order.status)) {
+//       return res.status(400).json({
+//         error: `Cannot update status. Order is already ${order.status}.`,
+//       });
+//     }
+
+//     order.status = status;
+//     await order.save();
+
+//     // ✅ Add SuperCoins if delivered
+//     if (status === "delivered") {
+//       const userId = order.userId;
+//       const totalAmount = order.totalAmount;
+//       const coinsToAdd = Math.floor(totalAmount / 150);
+
+//       if (coinsToAdd > 0) {
+//         const expiresAt = new Date();
+//         expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+//         let superCoin = await SuperCoinSchema.findOne({ userId });
+//         if (!superCoin) {
+//           superCoin = new SuperCoinSchema({ userId, coins: 0, history: [] });
+//         }
+
+//         superCoin.coins += coinsToAdd;
+//         superCoin.history.push({
+//           type: "purchase",
+//           coins: coinsToAdd,
+//           description: `Earned ${coinsToAdd} coin(s) on delivery of order ₹${totalAmount}`,
+//           expiresAt,
+//         });
+
+//         await superCoin.save();
+//       }
+//     }
+
+//     res.json({ message: "Order status updated", order });
+//   } catch (err) {
+//     console.error("Update status error:", err);
+//     res.status(500).json({ error: "Failed to update order status" });
+//   }
+// };
+
+
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    const allowedStatuses = ["shipped", "outfor delivery", "delivered", "cancelled"];
+    const allowedStatuses = [
+      "shipped",
+      "outfor delivery",
+      "delivered",
+      "cancelled",
+      "exchange_requested",
+      "exchange_in_transit",
+      "exchanged",
+      "return_requested",
+      "returned"
+    ];
+
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ error: "Invalid status provided" });
     }
@@ -59,10 +137,49 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     // ⛔ Prevent status change if already delivered or cancelled
-    if (["delivered", "cancelled"].includes(order.status)) {
+    if (["cancelled"].includes(order.status)) {
       return res.status(400).json({
         error: `Cannot update status. Order is already ${order.status}.`,
       });
+    }
+
+    // ✅ Handle exchange request
+    if (status === "exchange_requested") {
+      if (order.status !== "delivered") {
+        return res.status(400).json({ error: "You can only request exchange after delivery." });
+      }
+
+      if (!order.deliveredAt) {
+        return res.status(400).json({ error: "Delivery date not available for exchange check." });
+      }
+
+      const now = new Date();
+      const hoursSinceDelivery = (now - new Date(order.deliveredAt)) / (1000 * 60 * 60);
+      if (hoursSinceDelivery > 24) {
+        return res.status(400).json({ error: "Exchange window (24 hours) has expired." });
+      }
+    }
+
+    // ✅ Handle return request
+    if (status === "return_requested") {
+      if (order.status !== "delivered") {
+        return res.status(400).json({ error: "You can only request return after delivery." });
+      }
+
+      if (!order.deliveredAt) {
+        return res.status(400).json({ error: "Delivery date not available for return check." });
+      }
+
+      const now = new Date();
+      const hoursSinceDelivery = (now - new Date(order.deliveredAt)) / (1000 * 60 * 60);
+      if (hoursSinceDelivery > 24) {
+        return res.status(400).json({ error: "Return window (24 hours) has expired." });
+      }
+    }
+
+    // ✅ If status is 'delivered', set deliveredAt timestamp
+    if (status === "delivered") {
+      order.deliveredAt = new Date();
     }
 
     order.status = status;
