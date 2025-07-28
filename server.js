@@ -167,6 +167,177 @@ const getProductDetails = async (type, productId) => {
 };
 
 
+// app.post("/api/payment/order", authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const {
+//       cartId,
+//       paymentMode,
+//       addressId,
+//       expressDelivery,
+//       useSuperCoins = false,
+//       coinsToUse = 0,
+//     } = req.body;
+
+//     if (!cartId || !paymentMode || !addressId) {
+//       return res
+//         .status(400)
+//         .json({ message: "cartId, paymentMode, and addressId are required" });
+//     }
+
+//     if (!["online", "COD"].includes(paymentMode)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Invalid payment mode. Choose 'online' or 'COD'" });
+//     }
+
+//     if (paymentMode === "COD" && useSuperCoins) {
+//       return res.status(400).json({
+//         message: "SuperCoins cannot be used with Cash on Delivery (COD)",
+//       });
+//     }
+
+//     const cart = await Cart.findOne({ _id: cartId, userId });
+//     if (!cart || !cart.items.length) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart not found, not yours, or empty" });
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     const selectedAddress = user.addresses.id(addressId);
+//     if (!selectedAddress) {
+//       return res
+//         .status(404)
+//         .json({ message: "Address not found or doesn't belong to user" });
+//     }
+
+//     let amount = cart.totalPrice;
+//     if (expressDelivery === true) {
+//       amount += 25;
+//     }
+
+//     let superCoinDiscount = 0;
+
+//     if (useSuperCoins) {
+//       const superCoinData = await SuperCoin.findOne({ userId });
+//       const availableCoins = superCoinData?.coins || 0;
+
+//       if (coinsToUse > availableCoins) {
+//         return res.status(400).json({
+//           message: `You only have ${availableCoins} SuperCoins. You cannot use ${coinsToUse}.`,
+//         });
+//       }
+
+//       superCoinDiscount = coinsToUse;
+//       amount -= superCoinDiscount;
+//       if (amount < 0) amount = 0;
+//     }
+
+//     if (amount <= 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart total must be greater than zero" });
+//     }
+
+//     const formattedProducts = await Promise.all(
+//       cart.items.map(async (item) => {
+//         const product = await getProductDetails(item.itemType, item.productId);
+//         return {
+//           productId: item.productId,
+//           name: product?.name || "",
+//           image: product?.image || "",
+//           quantity: item.quantity,
+//           priceAtPurchase: item.priceAtAdd,
+//           productType: item.itemType,
+//         };
+//       })
+//     );
+    
+//     const order = new OrderSchema({
+//       userId,
+//       products: formattedProducts,
+//       totalAmount: amount,
+//       status: paymentMode === "COD" ? "OrderPlaced" : "OrderPlaced",
+//       deliveryAddress: selectedAddress,
+//       expressDelivery: expressDelivery === true,
+//     });
+
+//     await order.save();
+
+//     let paymentData = {
+//       orderId: order._id,
+//       userId,
+//       amount,
+//       status: "pending",
+//     };
+
+//     if (paymentMode === "online") {
+//       const options = {
+//         amount: Number(amount * 100),
+//         currency: "INR",
+//         receipt: `order_rcptid_${Date.now()}`,
+//         notes: {
+//           userId,
+//           cartId,
+//           expressDelivery: expressDelivery === true,
+//           useSuperCoins,
+//           coinsToUse,
+//         },
+//       };
+
+//       const razorpayOrder = await razorpay.orders.create(options);
+
+//       paymentData = {
+//         ...paymentData,
+//         transactionId: razorpayOrder.id,
+//       };
+
+//       const payment = new Payment(paymentData);
+//       await payment.save();
+
+//       return res.json({
+//         razorpayOrder,
+//         orderId: order._id,
+//         paymentMode,
+//         expressDelivery: expressDelivery === true,
+//         superCoinUsed: useSuperCoins,
+//         coinsUsed: coinsToUse,
+//         superCoinDiscount,
+//       });
+//     } else if (paymentMode === "COD") {
+//       paymentData = {
+//         ...paymentData,
+//         transactionId: `COD_${Date.now()}`,
+//         signature: "N/A",
+//         status: "pending",
+//       };
+
+//       const payment = new Payment(paymentData);
+//       await payment.save();
+
+//       await Cart.deleteOne({ _id: cartId });
+
+//       return res.json({
+//         message: "COD Order placed successfully",
+//         orderId: order._id,
+//         paymentMode,
+//         expressDelivery: expressDelivery === true,
+//         superCoinUsed: useSuperCoins,
+//         coinsUsed: coinsToUse,
+//         superCoinDiscount,
+//       });
+//     }
+//   } catch (err) {
+//     console.error("Order creation error:", err);
+//     res.status(500).json({ error: "Failed to create order" });
+//   }
+// });
+
+
+
 app.post("/api/payment/order", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -262,7 +433,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       totalAmount: amount,
       status: paymentMode === "COD" ? "OrderPlaced" : "OrderPlaced",
       deliveryAddress: selectedAddress,
-      expressDelivery: expressDelivery === true,
+      expressDelivery: expressDelivery || false,
     });
 
     await order.save();
@@ -282,7 +453,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         notes: {
           userId,
           cartId,
-          expressDelivery: expressDelivery === true,
+          expressDelivery: expressDelivery || false,
           useSuperCoins,
           coinsToUse,
         },
@@ -302,7 +473,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         razorpayOrder,
         orderId: order._id,
         paymentMode,
-        expressDelivery: expressDelivery === true,
+        expressDelivery: expressDelivery || false,
         superCoinUsed: useSuperCoins,
         coinsUsed: coinsToUse,
         superCoinDiscount,
@@ -324,7 +495,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
         message: "COD Order placed successfully",
         orderId: order._id,
         paymentMode,
-        expressDelivery: expressDelivery === true,
+        expressDelivery: expressDelivery || false,
         superCoinUsed: useSuperCoins,
         coinsUsed: coinsToUse,
         superCoinDiscount,
@@ -335,9 +506,6 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
-
-
-
 
 app.post("/api/payment/verify", async (req, res) => {
   try {
