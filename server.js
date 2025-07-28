@@ -797,3 +797,82 @@ app.get("/api/search-product/:name", async (req, res) => {
   }
 });
 
+
+
+app.get('/api/admin/dashboard', async (req, res) => {
+  try {
+    // Aggregate order statistics
+    const stats = await Order.aggregate([
+      {
+        $facet: {
+          newOrders: [
+            { $match: { status: 'OrderPlaced' } },
+            { $count: 'count' }
+          ],
+          completedOrders: [
+            { $match: { status: 'delivered' } },
+            { $count: 'count' }
+          ],
+          cancelledOrders: [
+            { $match: { status: 'cancelled' } },
+            { $count: 'count' }
+          ],
+          exchangedOrders: [
+            { $match: { status: { $in: ['exchange_requested', 'exchange_in_transit', 'exchanged'] } } },
+            { $count: 'count' }
+          ],
+          returnedOrders: [
+            { $match: { status: { $in: ['return_requested', 'returned'] } } },
+            { $count: 'count' }
+          ],
+          totalOrders: [
+            { $count: 'count' }
+          ],
+          onlineOrders: [
+            { $match: { paymentId: { $exists: true, $ne: null } } },
+            { $count: 'count' }
+          ],
+          codOrders: [
+            { $match: { paymentId: { $exists: false } } },
+            { $count: 'count' }
+          ]
+        }
+      },
+      {
+        $project: {
+          newOrders: { $arrayElemAt: ['$newOrders.count', 0] },
+          completedOrders: { $arrayElemAt: ['$completedOrders.count', 0] },
+          cancelledOrders: { $arrayElemAt: ['$cancelledOrders.count', 0] },
+          exchangedOrders: { $arrayElemAt: ['$exchangedOrders.count', 0] },
+          returnedOrders: { $arrayElemAt: ['$returnedOrders.count', 0] },
+          totalOrders: { $arrayElemAt: ['$totalOrders.count', 0] },
+          onlineOrders: { $arrayElemAt: ['$onlineOrders.count', 0] },
+          codOrders: { $arrayElemAt: ['$codOrders.count', 0] }
+        }
+      }
+    ]);
+
+    // Default to 0 if no results
+    const result = {
+      newOrders: stats[0]?.newOrders || 0,
+      completedOrders: stats[0]?.completedOrders || 0,
+      cancelledOrders: stats[0]?.cancelledOrders || 0,
+      exchangedOrders: stats[0]?.exchangedOrders || 0,
+      returnedOrders: stats[0]?.returnedOrders || 0,
+      totalOrders: stats[0]?.totalOrders || 0,
+      onlineOrders: stats[0]?.onlineOrders || 0,
+      codOrders: stats[0]?.codOrders || 0
+    };
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});

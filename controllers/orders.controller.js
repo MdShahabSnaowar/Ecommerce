@@ -2,13 +2,39 @@ const OrderSchema = require("../models/OrderSchema");
 const SuperCoinSchema = require("../models/SuperCoinSchema");
 
 // @desc    Get all orders (admin or user)
+
 exports.getAllOrders = async (req, res) => {
   try {
     const isAdmin = req.user?.role === "admin";
+    const status = req.query.status; // Get status from query parameter
 
-    const query = isAdmin
-      ? {} // admin gets all orders
-      : { userId: req.user.id }; // user gets only their orders
+    // Build query based on user role and status filter
+    const query = {};
+    if (!isAdmin) {
+      query.userId = req.user.id; // Non-admins get only their orders
+    }
+    if (status) {
+      // Validate status against allowed enum values
+      const validStatuses = [
+        "OrderPlaced",
+        "shipped",
+        "outfor delivery",
+        "delivered",
+        "cancelled",
+        "exchange_requested",
+        "exchange_in_transit",
+        "exchanged",
+        "return_requested",
+        "returned"
+      ];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`
+        });
+      }
+      query.status = status; // Add status filter to query
+    }
 
     const orders = await OrderSchema.find(query)
       .populate("userId", "name email")
