@@ -9,9 +9,9 @@ const router = express.Router();
 // POST /api/appointments
 router.post("/appointments", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.user_id;  // Extracted from token
+    const userId = req.user.id; // Extracted from token
     const { doctorId, date, slot, reason } = req.body;
-
+    console.log(userId, doctorId, date, slot?.start, slot?.end);
     if (!userId || !doctorId || !date || !slot?.start || !slot?.end) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -50,8 +50,8 @@ router.post("/appointments", authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("Booking Error:", err);
-    res.status(500).json({ message: "Server error during booking" });
-  }
+    res.status(500).json({ message: "Server error during booking" });
+  }
 });
 
 // routes/appointments.js  (or wherever your router.post("/appointments"... lives)

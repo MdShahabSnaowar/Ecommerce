@@ -18,8 +18,28 @@ const orderSchema = new Schema({
   ],
   status: {
     type: String,
-    enum: ["OrderPlaced", "shipped", "outfor delivery", "delivered", "cancelled"],
+    enum: [
+      "OrderPlaced",
+      "shipped",
+      "outfor delivery",
+      "delivered",
+      "cancelled",
+      "exchange_requested",
+      "exchange_in_transit",
+      "exchanged",
+      "return_requested",
+      "returned"
+    ],
     default: "OrderPlaced",
+  },
+
+  deliveredAt: {
+    type: Date,
+    default: null
+  },
+    exchangeReason: {
+    type: String,
+    default: null
   },
   totalAmount: {
     type: Number,
@@ -37,6 +57,10 @@ const orderSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  expressDelivery: {
+    type: Boolean,
+    default: false
+  }
 });
 
 module.exports = mongoose.model("Order", orderSchema);
