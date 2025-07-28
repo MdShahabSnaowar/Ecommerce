@@ -106,7 +106,7 @@ exports.getMyOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status } = req.body;
+    const { status, reason } = req.body; // ✅ include reason from body
 
     const allowedStatuses = [
       "shipped",
@@ -158,6 +158,12 @@ exports.updateOrderStatus = async (req, res) => {
       if (hoursSinceDelivery > 24) {
         return res.status(400).json({ error: "Exchange window (24 hours) has expired." });
       }
+
+      if (!reason || reason.trim() === "") {
+        return res.status(400).json({ error: "Reason is required for exchange request." });
+      }
+      order.exchangeReason = reason;
+
     }
 
     // ✅ Handle return request
@@ -175,6 +181,12 @@ exports.updateOrderStatus = async (req, res) => {
       if (hoursSinceDelivery > 24) {
         return res.status(400).json({ error: "Return window (24 hours) has expired." });
       }
+
+      if (!reason || reason.trim() === "") {
+        return res.status(400).json({ error: "Reason is required for return request." });
+      }
+      order.returnReason = reason;
+      
     }
 
     // ✅ If status is 'delivered', set deliveredAt timestamp

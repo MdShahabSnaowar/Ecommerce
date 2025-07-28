@@ -37,6 +37,10 @@ const orderSchema = new Schema({
     type: Date,
     default: null
   },
+    exchangeReason: {
+    type: String,
+    default: null
+  },
   totalAmount: {
     type: Number,
     required: true,
