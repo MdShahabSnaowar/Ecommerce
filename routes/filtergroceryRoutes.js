@@ -101,7 +101,6 @@ router.put("/grocery-categories/:id",authAdmin, async (req, res) => {
 });
 
 
-
 router.delete("/grocery-categories/:id",authAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -446,6 +445,44 @@ router.delete("/popular-veggies/:id",authAdmin, async (req, res) => {
 });
 
 // FilterPopularVeggiesProduct CRUD
+
+router.get("/filter-popular-veggies", async (req, res) => {
+  try {
+    const categories = await FilterPopularVeggies.find();
+
+    const result = await Promise.all(
+      categories.map(async (category) => {
+        // Find all product mappings for this category
+        const mappings = await FilterPopularVeggiesProduct.find({ categoryId: category._id }).populate("productId");
+
+        // Extract product details from populated mappings
+        const products = mappings.map((mapping) => mapping.productId);
+
+        return {
+          _id: category._id,
+          name: category.name,
+          description: category.description,
+          products,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Filter Popular Veggies with products fetched successfully",
+      data: result,
+      error: false,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching filter popular veggies:", error.message);
+    res.status(500).json({
+      message: "Something went wrong while fetching filter popular veggies",
+      data: null,
+      error: true,
+    });
+  }
+});
+
+
 router.post("/popular-veggies-products",authAdmin, async (req, res) => {
   try {
     const { productIds, categoryId } = req.body;
@@ -566,7 +603,6 @@ router.get("/popular-veggies/products/:categoryId", async (req, res) => {
 });
 
 
-
 router.get("/filter-popular-veggies-with-products", async (req, res) => {
   try {
     const categories = await FilterPopularVeggies.find();
@@ -599,6 +635,40 @@ router.get("/filter-popular-veggies-with-products", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Something went wrong while fetching popular veggies",
+      error: true,
+    });
+  }
+});
+
+router.delete("/popular-veggies-products/:mappingId", authAdmin, async (req, res) => {
+  try {
+    const { mappingId } = req.params;
+    // if (!isValidObjectId(mappingId)) {
+    //   return res.status(400).json({
+    //     message: "Invalid mapping ID",
+    //     data: null,
+    //     error: true,
+    //   });
+    // }
+
+const deleted=await FilterPopularVeggiesProduct.findOneAndDelete({ productId: mappingId });
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Product mapping not found",
+        data: null,
+        error: true,
+      });
+    }
+
+    res.status(200).json({
+      message: "Product removed from category successfully",
+      data: deleted,
+      error: false,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+      data: null,
       error: true,
     });
   }
@@ -915,41 +985,7 @@ router.get("/dairy-categories-product", async (req, res) => {
 });
 
 
-router.get("/filter-popular-veggies", async (req, res) => {
-  try {
-    const categories = await FilterPopularVeggies.find();
-
-    const result = await Promise.all(
-      categories.map(async (category) => {
-        // Find all product mappings for this category
-        const mappings = await FilterPopularVeggiesProduct.find({ categoryId: category._id }).populate("productId");
-
-        // Extract product details from populated mappings
-        const products = mappings.map((mapping) => mapping.productId);
-
-        return {
-          _id: category._id,
-          name: category.name,
-          description: category.description,
-          products,
-        };
-      })
-    );
-
-    res.status(200).json({
-      message: "Filter Popular Veggies with products fetched successfully",
-      data: result,
-      error: false,
-    });
-  } catch (error) {
-    console.error("❌ Error fetching filter popular veggies:", error.message);
-    res.status(500).json({
-      message: "Something went wrong while fetching filter popular veggies",
-      data: null,
-      error: true,
-    });
-  }
-});
+// Medicines Crud
 
 router.post("/filter-medicine/category", async (req, res) => {
   try {

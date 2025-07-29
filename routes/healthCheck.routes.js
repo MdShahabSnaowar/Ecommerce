@@ -18,7 +18,11 @@ router.post(
 );
 router.get("/", getAllHealthChecks);
 router.get("/:id", getHealthCheckById);
-router.put("/:id", updateHealthCheck);
+router.put("/:id",
+  
+  upload.single("image"), // 'image' should match the form-data key
+  
+    updateHealthCheck);
 router.delete("/:id", deleteHealthCheck);
 
 module.exports = router;

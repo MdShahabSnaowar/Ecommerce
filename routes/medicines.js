@@ -37,6 +37,7 @@ router.get("/categories-with-subcategories", async (req, res) => {
           _id: category._id,
           name: category.name,
           description: category.description,
+          image:category.image,
           subcategories: subcategories.map((sub) => ({
             _id: sub._id,
             name: sub.name,
