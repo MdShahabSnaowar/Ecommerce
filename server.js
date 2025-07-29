@@ -434,6 +434,7 @@ app.post("/api/payment/order", authMiddleware, async (req, res) => {
       status: paymentMode === "COD" ? "OrderPlaced" : "OrderPlaced",
       deliveryAddress: selectedAddress,
       expressDelivery: expressDelivery || false,
+      paymentType: paymentMode,
     });
 
     await order.save();

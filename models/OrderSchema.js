@@ -53,6 +53,11 @@ const orderSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Payment",
   },
+  paymentType: {
+    type: String,
+    enum: ["online", "COD"],
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now,
